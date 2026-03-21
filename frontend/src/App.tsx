@@ -10,8 +10,10 @@ import AdminAuthWrapper from "@components/AdminAuthWrapper";
 import { useUserSync } from "@hooks/useUserSync";
 import "./App.css";
 import AdminPage from "./pages/AdminPage";
+import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import OfficePage from "./pages/OfficePage";
 
 const UserSyncWrapper = ({ children }: { children: React.ReactNode }) => {
   useUserSync();
@@ -50,6 +52,22 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/office"
+            element={
+              <ProtectedRoute>
+                <OfficePage />
               </ProtectedRoute>
             }
           />
