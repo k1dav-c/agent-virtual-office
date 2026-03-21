@@ -15,6 +15,7 @@ export type AgentRole =
 
 export interface AgentSession {
   id: string;
+  session_id: string;
   role: AgentRole;
   status: AgentStatus;
   summary: string | null;

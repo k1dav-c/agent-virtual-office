@@ -2,12 +2,12 @@ table:
   name: agent_sessions
   schema: public
 object_relationships:
-  - name: user
-    using:
-      foreign_key_constraint_on: user_id
   - name: api_key
     using:
       foreign_key_constraint_on: api_key_id
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
 array_relationships:
   - name: logs
     using:
@@ -17,6 +17,18 @@ array_relationships:
           name: session_logs
           schema: public
 select_permissions:
+  - role: anonymous
+    permission:
+      columns:
+        - id
+        - role
+        - status
+        - summary
+        - workspace
+        - started_at
+        - last_heartbeat_at
+      filter: {}
+    comment: Public read for office view
   - role: user
     permission:
       columns:
@@ -34,15 +46,3 @@ select_permissions:
         user_id:
           _eq: X-Hasura-User-Id
     comment: ""
-  - role: anonymous
-    permission:
-      columns:
-        - id
-        - role
-        - status
-        - summary
-        - workspace
-        - started_at
-        - last_heartbeat_at
-      filter: {}
-    comment: "Public read for office view"

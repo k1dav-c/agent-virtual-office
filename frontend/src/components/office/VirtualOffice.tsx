@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import {
   OFFICE_SCENES,
+  getEffectiveAgentCount,
   getSceneForAgentCount,
 } from "../../config/office-scenes";
 import type { AgentSession } from "../../types/agent";
@@ -14,9 +15,13 @@ interface Props {
 }
 
 export default function VirtualOffice({ agents }: Props) {
+  const effectiveCount = useMemo(
+    () => getEffectiveAgentCount(agents),
+    [agents],
+  );
   const scene = useMemo(
-    () => getSceneForAgentCount(agents.length),
-    [agents.length],
+    () => getSceneForAgentCount(effectiveCount),
+    [effectiveCount],
   );
 
   return (

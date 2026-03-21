@@ -14,9 +14,9 @@ export const OFFICE_SCENES: OfficeScene[] = [
     wallColor: "#3d3d3d",
     accentColor: "#ff9f43",
     deskPositions: [
-      { x: 15, y: 55, direction: "right" },
-      { x: 45, y: 55, direction: "left" },
-      { x: 75, y: 55, direction: "right" },
+      { x: 18, y: 58, direction: "right" },
+      { x: 50, y: 58, direction: "left" },
+      { x: 82, y: 58, direction: "right" },
     ],
     decorations: ["whiteboard", "pizza-box", "lamp"],
   },
@@ -32,12 +32,12 @@ export const OFFICE_SCENES: OfficeScene[] = [
     wallColor: "#e8d5c4",
     accentColor: "#6c5ce7",
     deskPositions: [
-      { x: 10, y: 45, direction: "right" },
-      { x: 30, y: 45, direction: "right" },
-      { x: 50, y: 45, direction: "left" },
-      { x: 10, y: 72, direction: "right" },
-      { x: 30, y: 72, direction: "left" },
-      { x: 50, y: 72, direction: "right" },
+      { x: 12, y: 45, direction: "right" },
+      { x: 38, y: 45, direction: "left" },
+      { x: 64, y: 45, direction: "right" },
+      { x: 12, y: 75, direction: "right" },
+      { x: 38, y: 75, direction: "left" },
+      { x: 64, y: 75, direction: "right" },
     ],
     decorations: ["coffee-machine", "plant", "bookshelf"],
   },
@@ -54,16 +54,16 @@ export const OFFICE_SCENES: OfficeScene[] = [
     wallColor: "#dfe6ed",
     accentColor: "#00b894",
     deskPositions: [
-      { x: 8, y: 35, direction: "right" },
-      { x: 24, y: 35, direction: "right" },
-      { x: 40, y: 35, direction: "left" },
-      { x: 56, y: 35, direction: "right" },
-      { x: 72, y: 35, direction: "left" },
-      { x: 8, y: 65, direction: "right" },
-      { x: 24, y: 65, direction: "left" },
-      { x: 40, y: 65, direction: "right" },
-      { x: 56, y: 65, direction: "left" },
-      { x: 72, y: 65, direction: "right" },
+      { x: 10, y: 38, direction: "right" },
+      { x: 30, y: 38, direction: "left" },
+      { x: 50, y: 38, direction: "right" },
+      { x: 70, y: 38, direction: "left" },
+      { x: 90, y: 38, direction: "right" },
+      { x: 10, y: 68, direction: "right" },
+      { x: 30, y: 68, direction: "left" },
+      { x: 50, y: 68, direction: "right" },
+      { x: 70, y: 68, direction: "left" },
+      { x: 90, y: 68, direction: "right" },
     ],
     decorations: ["meeting-room", "snack-bar", "tv-screen", "plant"],
   },
@@ -79,21 +79,21 @@ export const OFFICE_SCENES: OfficeScene[] = [
     wallColor: "#d5dde8",
     accentColor: "#0984e3",
     deskPositions: [
-      { x: 6, y: 28, direction: "right" },
-      { x: 18, y: 28, direction: "right" },
-      { x: 30, y: 28, direction: "left" },
-      { x: 44, y: 28, direction: "right" },
-      { x: 56, y: 28, direction: "left" },
-      { x: 6, y: 50, direction: "right" },
-      { x: 18, y: 50, direction: "left" },
-      { x: 30, y: 50, direction: "right" },
-      { x: 44, y: 50, direction: "left" },
-      { x: 56, y: 50, direction: "right" },
-      { x: 6, y: 72, direction: "right" },
-      { x: 18, y: 72, direction: "left" },
-      { x: 30, y: 72, direction: "right" },
-      { x: 44, y: 72, direction: "left" },
-      { x: 56, y: 72, direction: "right" },
+      { x: 10, y: 30, direction: "right" },
+      { x: 30, y: 30, direction: "left" },
+      { x: 50, y: 30, direction: "right" },
+      { x: 70, y: 30, direction: "left" },
+      { x: 90, y: 30, direction: "right" },
+      { x: 10, y: 52, direction: "right" },
+      { x: 30, y: 52, direction: "left" },
+      { x: 50, y: 52, direction: "right" },
+      { x: 70, y: 52, direction: "left" },
+      { x: 90, y: 52, direction: "right" },
+      { x: 10, y: 74, direction: "right" },
+      { x: 30, y: 74, direction: "left" },
+      { x: 50, y: 74, direction: "right" },
+      { x: 70, y: 74, direction: "left" },
+      { x: 90, y: 74, direction: "right" },
     ],
     decorations: ["reception", "meeting-room", "water-cooler", "printer"],
   },
@@ -109,8 +109,8 @@ export const OFFICE_SCENES: OfficeScene[] = [
     wallColor: "#c8e6c9",
     accentColor: "#e17055",
     deskPositions: Array.from({ length: 20 }, (_, i) => ({
-      x: 6 + (i % 5) * 18,
-      y: 25 + Math.floor(i / 5) * 20,
+      x: 10 + (i % 5) * 20,
+      y: 28 + Math.floor(i / 5) * 18,
       direction: (i % 2 === 0 ? "right" : "left") as "left" | "right",
     })),
     decorations: ["garden", "gym", "cafeteria", "fountain"],
@@ -128,8 +128,8 @@ export const OFFICE_SCENES: OfficeScene[] = [
     wallColor: "#12123e",
     accentColor: "#00fff5",
     deskPositions: Array.from({ length: 30 }, (_, i) => ({
-      x: 5 + (i % 6) * 15,
-      y: 20 + Math.floor(i / 6) * 16,
+      x: 8 + (i % 6) * 17,
+      y: 22 + Math.floor(i / 6) * 16,
       direction: (i % 2 === 0 ? "right" : "left") as "left" | "right",
     })),
     decorations: ["hologram", "sky-bridge", "neon-lights", "robot"],
@@ -143,4 +143,16 @@ export function getSceneForAgentCount(count: number): OfficeScene {
     }
   }
   return OFFICE_SCENES[OFFICE_SCENES.length - 1];
+}
+
+/**
+ * Count agents by unique (session_id, role) pairs.
+ * This means: multiple sessions = multiple agents,
+ * and having diverse roles can increase the effective count.
+ */
+export function getEffectiveAgentCount(
+  agents: { session_id: string; role: string }[],
+): number {
+  const unique = new Set(agents.map((a) => `${a.session_id}::${a.role}`));
+  return unique.size;
 }

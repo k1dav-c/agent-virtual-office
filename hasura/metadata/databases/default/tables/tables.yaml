@@ -1,4 +1,4 @@
-- "!include public_users.yaml"
-- "!include public_api_keys.yaml"
 - "!include public_agent_sessions.yaml"
+- "!include public_api_keys.yaml"
 - "!include public_session_logs.yaml"
+- "!include public_users.yaml"

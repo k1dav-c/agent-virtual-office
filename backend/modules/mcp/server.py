@@ -41,8 +41,8 @@ UPSERT_SESSION = gql(
                 last_heartbeat_at: "now()"
             }
             on_conflict: {
-                constraint: agent_sessions_api_key_id_session_id_key,
-                update_columns: [role, status, summary, link, workspace, last_heartbeat_at]
+                constraint: agent_sessions_api_key_id_session_id_role_key,
+                update_columns: [status, summary, link, workspace, last_heartbeat_at]
             }
         ) {
             id
@@ -53,11 +53,12 @@ UPSERT_SESSION = gql(
 
 GET_SESSION = gql(
     """
-    query GetSession($api_key_id: uuid!, $session_id: String!) {
+    query GetSession($api_key_id: uuid!, $session_id: String!, $role: String!) {
         agent_sessions(
             where: {
                 api_key_id: { _eq: $api_key_id },
-                session_id: { _eq: $session_id }
+                session_id: { _eq: $session_id },
+                role: { _eq: $role }
             }
             limit: 1
         ) {
@@ -96,6 +97,7 @@ async def report_status(
     state: str,
     link: str = "",
     workspace: str = "",
+    session_id: str = "",
 ) -> str:
     """
     Report your current working status to the Virtual Office.
@@ -111,6 +113,9 @@ async def report_status(
         state: Your current state - one of: working, complete, idle, failure.
         link: Optional URL to a relevant resource (PR, issue, etc).
         workspace: Optional Coder workspace identifier (e.g. owner/workspace-name).
+        session_id: A unique identifier for this Claude Code session. Use a random UUID
+                    generated once at the start of your session to distinguish multiple
+                    concurrent sessions using the same API key.
     """
     valid_states = {"working", "complete", "idle", "failure"}
     if state not in valid_states:
@@ -121,8 +126,9 @@ async def report_status(
     except ValueError as e:
         return f"Error: {e}"
 
-    # Deterministic session ID from the API key ID
-    session_id = str(uuid.uuid5(uuid.NAMESPACE_URL, auth_result.api_key_id))
+    # Use client-provided session_id, or fall back to deterministic one from API key
+    if not session_id:
+        session_id = str(uuid.uuid5(uuid.NAMESPACE_URL, auth_result.api_key_id))
 
     role = infer_role(summary)
 
@@ -151,6 +157,7 @@ async def report_status(
             variable_values={
                 "api_key_id": auth_result.api_key_id,
                 "session_id": session_id,
+                "role": role,
             },
         )
         sessions = session_data.get("agent_sessions", [])

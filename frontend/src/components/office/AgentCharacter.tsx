@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { getCoderHost } from "@components/CoderHostSetting";
 import { ROLE_CONFIGS, STATUS_COLORS } from "../../config/agent-roles";
 import type { AgentSession, DeskPosition } from "../../types/agent";
 import { RoleSprite } from "./CharacterSprites";
@@ -22,6 +23,16 @@ export default function AgentCharacter({ agent, position }: Props) {
     return `${Math.floor(mins / 60)}h ago`;
   };
 
+  const coderHost = getCoderHost();
+  const workspaceUrl =
+    agent.workspace && coderHost ? `${coderHost}/@me/${agent.workspace}` : null;
+
+  const handleClick = () => {
+    if (workspaceUrl) {
+      window.open(workspaceUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <div
       className="absolute transition-all duration-700 ease-in-out"
@@ -31,12 +42,34 @@ export default function AgentCharacter({ agent, position }: Props) {
         transform: "translate(-50%, -50%)",
         zIndex: 10,
       }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
     >
-      {/* Tooltip */}
+      {/* Invisible hit area covering sprite + desk + label */}
+      <div
+        className="absolute inset-0"
+        style={{
+          top: -72,
+          bottom: -20,
+          left: -10,
+          right: -10,
+          cursor: workspaceUrl ? "pointer" : "default",
+        }}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        onClick={handleClick}
+      />
+
+      {/* Tooltip — align based on horizontal position to avoid clipping */}
       {showTooltip && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl pointer-events-none z-50">
+        <div
+          className="absolute bottom-full mb-14 w-48 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl pointer-events-none z-50"
+          style={{
+            ...(position.x < 20
+              ? { left: -10 }
+              : position.x > 80
+                ? { right: -10 }
+                : { left: "50%", transform: "translateX(-50%)" }),
+          }}
+        >
           <div className="flex items-center gap-1.5 mb-1">
             <span>{roleConfig.emoji}</span>
             <span className="font-bold">{roleConfig.label}</span>
@@ -49,8 +82,26 @@ export default function AgentCharacter({ agent, position }: Props) {
           {agent.summary && (
             <p className="text-gray-300 leading-snug mt-1">{agent.summary}</p>
           )}
+          {agent.workspace && (
+            <p className="text-blue-400 mt-1 truncate">💻 {agent.workspace}</p>
+          )}
           <p className="text-gray-500 mt-1">{timeSince()}</p>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+          {workspaceUrl && (
+            <p className="text-gray-500 text-[9px] mt-0.5">
+              Click to open workspace
+            </p>
+          )}
+          {/* Arrow — follows tooltip alignment */}
+          <div
+            className="absolute top-full border-4 border-transparent border-t-gray-900"
+            style={{
+              ...(position.x < 20
+                ? { left: 20 }
+                : position.x > 80
+                  ? { right: 20 }
+                  : { left: "50%", transform: "translateX(-50%)" }),
+            }}
+          />
         </div>
       )}
 
@@ -65,14 +116,18 @@ export default function AgentCharacter({ agent, position }: Props) {
       >
         {/* Monitor on desk */}
         <div
-          className="absolute -top-5 left-1/2 -translate-x-1/2 w-8 h-6 rounded-sm border-2 flex items-center justify-center"
+          className="absolute -top-5 left-1/2 -translate-x-1/2 w-8 h-6 rounded-sm border-2 flex items-center justify-center overflow-hidden"
           style={{
             backgroundColor: "#1a1a2e",
             borderColor: "#333",
+            boxShadow:
+              agent.status === "working"
+                ? "0 0 8px rgba(74, 222, 128, 0.4)"
+                : undefined,
           }}
         >
           <div
-            className="w-5 h-3 rounded-sm"
+            className={`w-5 h-3 rounded-sm ${agent.status === "working" ? "agent-working-monitor" : ""}`}
             style={{
               backgroundColor:
                 agent.status === "working"
@@ -83,15 +138,29 @@ export default function AgentCharacter({ agent, position }: Props) {
               opacity: 0.7,
             }}
           />
+          {/* Scanline effect when working */}
+          {agent.status === "working" && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(transparent 40%, rgba(74, 222, 128, 0.15) 50%, transparent 60%)",
+                animation: "monitor-scanline 1.5s linear infinite",
+              }}
+            />
+          )}
         </div>
       </div>
 
       {/* Character — role-specific pixel sprite */}
       <div
-        className="absolute -top-16 left-1/2 cursor-pointer"
+        className={`absolute -top-16 left-1/2 ${agent.status === "working" ? "agent-working-sprite" : ""}`}
         style={{
+          ["--sprite-scale-x" as string]:
+            position.direction === "left" ? -1 : 1,
           transform: `translate(-50%, 0) scaleX(${position.direction === "left" ? -1 : 1})`,
           filter: "drop-shadow(1px 2px 0 rgba(0,0,0,0.25))",
+          pointerEvents: "none",
         }}
       >
         <RoleSprite role={agent.role} color={roleConfig.color} flip={false} />
@@ -106,7 +175,10 @@ export default function AgentCharacter({ agent, position }: Props) {
       </div>
 
       {/* Role label */}
-      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-center whitespace-nowrap">
+      <div
+        className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-center whitespace-nowrap"
+        style={{ pointerEvents: "none" }}
+      >
         <span
           className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
           style={{

@@ -26,3 +26,41 @@
 .animate-slide-in-right {
     animation: slide-in-right 0.3s ease-out;
 }
+
+/* Agent working animations */
+@keyframes agent-typing {
+    0%, 100% { transform: translateY(0); }
+    25% { transform: translateY(-1px); }
+    50% { transform: translateY(0); }
+    75% { transform: translateY(-1px); }
+}
+
+@keyframes agent-body-bob {
+    0%, 100% { transform: translate(-50%, 0) scaleX(var(--sprite-scale-x, 1)); }
+    50% { transform: translate(-50%, -2px) scaleX(var(--sprite-scale-x, 1)); }
+}
+
+@keyframes monitor-flicker {
+    0%, 100% { opacity: 0.7; }
+    30% { opacity: 0.9; }
+    50% { opacity: 0.5; }
+    70% { opacity: 1; }
+    85% { opacity: 0.6; }
+}
+
+@keyframes monitor-scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+}
+
+.agent-working-sprite {
+    animation: agent-body-bob 1.2s ease-in-out infinite;
+}
+
+.agent-working-monitor {
+    animation: monitor-flicker 2s ease-in-out infinite;
+}
+
+.agent-working-arms {
+    animation: agent-typing 0.3s steps(2) infinite;
+}

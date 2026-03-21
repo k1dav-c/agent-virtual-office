@@ -5,6 +5,19 @@ object_relationships:
   - name: user
     using:
       foreign_key_constraint_on: user_id
+insert_permissions:
+  - role: user
+    permission:
+      check:
+        user_id:
+          _eq: X-Hasura-User-Id
+      set:
+        user_id: x-hasura-user-id
+      columns:
+        - key_hash
+        - key_prefix
+        - name
+    comment: ""
 select_permissions:
   - role: user
     permission:
@@ -18,19 +31,6 @@ select_permissions:
       filter:
         user_id:
           _eq: X-Hasura-User-Id
-    comment: ""
-insert_permissions:
-  - role: user
-    permission:
-      columns:
-        - key_hash
-        - key_prefix
-        - name
-      check:
-        user_id:
-          _eq: X-Hasura-User-Id
-      set:
-        user_id: x-hasura-user-id
     comment: ""
 update_permissions:
   - role: user

@@ -10,6 +10,7 @@ const AGENT_SESSIONS_SUBSCRIPTION = `
       order_by: { started_at: asc }
     ) {
       id
+      session_id
       role
       status
       summary
@@ -21,7 +22,7 @@ const AGENT_SESSIONS_SUBSCRIPTION = `
   }
 `;
 
-const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 1 day
 
 export function useAgentSessions() {
   const { getIdTokenClaims } = useAuth0();

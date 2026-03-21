@@ -23,6 +23,7 @@ export default function McpConfigSnippet() {
   const systemPrompt = `Use the virtual-office MCP tool \`report_status\` to report your working status.
 - Report a summary of what you're doing, your state (working/complete/idle/failure), and optionally a link and workspace name.
 - Always include the \`workspace\` parameter with your Coder workspace identifier (e.g. "owner/workspace-name").
+- Always include a \`session_id\` parameter — generate a random UUID once at the start of this session and reuse it for all subsequent report_status calls. This uniquely identifies your session even if multiple sessions share the same API key.
 - Report status after receiving each new user message.
 - Report "complete" when you finish a task.`;
 
