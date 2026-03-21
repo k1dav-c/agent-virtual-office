@@ -1,9 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-    --color-sidebar: #565656;
-    --color-primary: #a6825f;
-    --color-background: #f4f4f4;
+    --color-sidebar: #2e3440;
+    --color-primary: #5e81ac;
+    --color-background: #d8dee9;
+}
+
+/* Pixel-art global overrides */
+* {
+    image-rendering: auto;
 }
 
 @keyframes slide-in-right {

@@ -1,6 +1,6 @@
 {
-  "name": "react-auth0-template",
-  "description": "A template for React with Auth0 authentication.",
+  "name": "agent-virtual-office",
+  "description": "Agent Virtual Office — See your AI agents at work in a pixel-art office.",
   "version": "1.0.0",
   "type": "module",
   "scripts": {

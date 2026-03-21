@@ -1,5 +1,5 @@
 {
-  "name": "Fullend Template",
+  "name": "Agent Virtual Office",
   "build": {
     "context": "../",
     "dockerfile": "Dockerfile"
@@ -19,7 +19,7 @@
       "onAutoForward": "notify"
     },
     "3000": {
-      "label": "Next.js Frontend",
+      "label": "Frontend (Vite + React)",
       "onAutoForward": "notify"
     },
     "9693": {

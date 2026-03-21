@@ -23,7 +23,13 @@ export default defineConfig(async () => {
     server: {
       port: 9000,
       host: true,
-      allowedHosts: ["vue--full-template--k1dave6412.coder.k1dav.fun", "localhost", "127.0.0.1", "0.0.0.0"],
+      allowedHosts: [
+        "vue--agent-virtual-office--k1dave6412.coder.k1dav.fun",
+        "vue--full-template--k1dave6412.coder.k1dav.fun",
+        "localhost",
+        "127.0.0.1",
+        "0.0.0.0",
+      ],
     },
     build: {
       outDir: "dist",

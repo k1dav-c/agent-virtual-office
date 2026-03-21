@@ -7,10 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#a6825f',
-        'primary-dark': '#8b6b4a',
-        sidebar: '#565656',
-        'sidebar-border': '#666666',
+        primary: '#5e81ac',
+        'primary-dark': '#4c6a91',
+        sidebar: '#2e3440',
+        'sidebar-border': '#4c566a',
       }
     },
   },

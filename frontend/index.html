@@ -1,29 +1,29 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Virtual Office</title>
+    <link rel="icon" type="image/png" href="/favicon.ico" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>React Auth0 Template</title>
-  <link rel="icon" type="image/png" href="/favicon.ico" />
-</head>
-
-<body>
-  <div id="root"></div>
-  <script>
-    window.onerror = function (msg) {
-      var el = document.getElementById('root');
-      if (el) el.innerHTML =
-        '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#f3f4f6">' +
-        '<div style="background:#fff;padding:32px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1);max-width:32rem;width:100%">' +
-        '<h1 style="font-size:1.25rem;font-weight:700;color:#dc2626;margin:0 0 12px">Application Error</h1>' +
-        '<pre style="padding:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:.875rem;color:#991b1b;white-space:pre-wrap;word-break:break-word;margin:0">' +
-        msg + '</pre>' +
-        '<button onclick="location.reload()" style="margin-top:16px;padding:8px 16px;background:#1f2937;color:#fff;border:none;border-radius:6px;font-size:.875rem;cursor:pointer">Reload</button>' +
-        '</div></div>';
-    };
-  </script>
-  <script type="module" src="/src/index.tsx"></script>
-</body>
-
+  <body>
+    <div id="root"></div>
+    <script>
+      window.onerror = function (msg) {
+        var el = document.getElementById("root");
+        if (el)
+          el.innerHTML =
+            '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;background:#f3f4f6">' +
+            '<div style="background:#fff;padding:32px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1);max-width:32rem;width:100%">' +
+            '<h1 style="font-size:1.25rem;font-weight:700;color:#dc2626;margin:0 0 12px">Application Error</h1>' +
+            '<pre style="padding:16px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:.875rem;color:#991b1b;white-space:pre-wrap;word-break:break-word;margin:0">' +
+            msg +
+            "</pre>" +
+            '<button onclick="location.reload()" style="margin-top:16px;padding:8px 16px;background:#1f2937;color:#fff;border:none;border-radius:6px;font-size:.875rem;cursor:pointer">Reload</button>' +
+            "</div></div>";
+      };
+    </script>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
 </html>
