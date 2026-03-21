@@ -1,0 +1,26 @@
+:9696 {
+	@fastapi {
+		path /api/*
+		path /auth/*
+		path /template/*
+		path /redoc
+		path /docs
+		path /openapi.json
+	}
+
+	@hasura {
+		path /v1*
+		path /v2*
+		path /graphql-engine
+		path /console*
+	}
+
+	handle {
+		reverse_proxy @hasura hasura:8080
+		reverse_proxy @fastapi localhost:8000
+	}
+}
+
+:8080 {
+    reverse_proxy hasura:8080
+}

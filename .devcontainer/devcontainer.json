@@ -1,0 +1,38 @@
+{
+  "name": "Fullend Template",
+  "build": {
+    "context": "../",
+    "dockerfile": "Dockerfile"
+  },
+  "forwardPorts": [8000, 8080, 5432, 3000, 9693, 9695, 9696],
+  "portsAttributes": {
+    "8000": {
+      "label": "Python FastAPI",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Hasura GraphQL",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "notify"
+    },
+    "3000": {
+      "label": "Next.js Frontend",
+      "onAutoForward": "notify"
+    },
+    "9693": {
+      "label": "Hasura Forward Container",
+      "onAutoForward": "notify"
+    },
+    "9695": {
+      "label": "Hasura Forward Container",
+      "onAutoForward": "notify"
+    },
+    "9696": {
+      "label": "Hasura Forward Container",
+      "onAutoForward": "notify"
+    }
+  }
+}

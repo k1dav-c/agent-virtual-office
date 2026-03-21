@@ -1,0 +1,9 @@
+fastapi~=0.129.0
+uvicorn[standard]~=0.41.0
+python-multipart~=0.0.22
+aio-pika~=9.6.0
+gql[all]~=4.0.0
+pydantic[email]~=2.12.5
+python-dotenv~=1.2.1
+loguru~=0.7.3
+PyJWT[crypto]~=2.11.0

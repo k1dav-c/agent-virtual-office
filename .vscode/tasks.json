@@ -1,0 +1,267 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Frontend: Install Dependencies",
+      "type": "shell",
+      "command": "npm",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Hasura: Open Console",
+      "type": "shell",
+      "command": "hasura",
+      "args": ["console"],
+      "options": {
+        "cwd": "${workspaceFolder}/hasura",
+        "env": {
+          "HASURA_GRAPHQL_ADMIN_SECRET": "hasuraadminsecret"
+        }
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Hasura: Apply Metadata",
+      "type": "shell",
+      "command": "hasura",
+      "args": ["metadata", "apply"],
+      "options": {
+        "cwd": "${workspaceFolder}/hasura",
+        "env": {
+          "HASURA_GRAPHQL_ADMIN_SECRET": "hasuraadminsecret"
+        }
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Hasura: Apply Migrations",
+      "type": "shell",
+      "command": "hasura",
+      "args": ["migrate", "apply"],
+      "options": {
+        "cwd": "${workspaceFolder}/hasura",
+        "env": {
+          "HASURA_GRAPHQL_ADMIN_SECRET": "hasuraadminsecret"
+        }
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Hasura: Metadata Diff",
+      "type": "shell",
+      "command": "hasura",
+      "args": ["metadata", "diff"],
+      "options": {
+        "cwd": "${workspaceFolder}/hasura",
+        "env": {
+          "HASURA_GRAPHQL_ADMIN_SECRET": "hasuraadminsecret"
+        }
+      },
+      "problemMatcher": [],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Hasura: Metadata Reload",
+      "type": "shell",
+      "command": "hasura",
+      "args": ["metadata", "reload"],
+      "options": {
+        "cwd": "${workspaceFolder}/hasura",
+        "env": {
+          "HASURA_GRAPHQL_ADMIN_SECRET": "hasuraadminsecret"
+        }
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Frontend: Start Development Server",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {
+          "NODE_OPTIONS": "--no-deprecation"
+        }
+      },
+      "problemMatcher": [],
+      "dependsOn": ["Frontend: Install Dependencies"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true
+    },
+    {
+      "label": "Frontend: Build",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "env": {
+          "NODE_OPTIONS": "--no-deprecation"
+        }
+      },
+      "problemMatcher": [],
+      "dependsOn": ["Frontend: Install Dependencies"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Backend (FastAPI): Start API Server",
+      "type": "shell",
+      "command": "uvicorn",
+      "args": ["main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true
+    },
+    {
+      "label": "Backend (FastAPI): Start Consumer Worker",
+      "type": "shell",
+      "command": "python",
+      "args": ["consumer_worker.py"],
+      "options": {
+        "cwd": "${workspaceFolder}/backend"
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true
+    },
+    {
+      "label": "Backend (FastAPI): Start All Services",
+      "dependsOn": [
+        "Backend (FastAPI): Start API Server",
+        "Backend (FastAPI): Start Consumer Worker"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Frontend: Add Allowed Host",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/scripts/add-vite-allowed-host.js",
+        "${input:allowedHost}"
+      ],
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "allowedHost",
+      "type": "promptString",
+      "description": "Enter the hostname or URL to add to Vite allowedHosts"
+    }
+  ]
+}

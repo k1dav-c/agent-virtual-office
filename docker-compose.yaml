@@ -1,0 +1,147 @@
+services:
+  # PostgreSQL Database for Hasura
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${SERVICE_USER_POSTGRES}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SERVICE_USER_POSTGRES}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Hasura GraphQL Engine
+  hasura:
+    image: hasura/graphql-engine:v2.36.4
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/${POSTGRES_DB}
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "${HASURA_GRAPHQL_ENABLE_CONSOLE}"
+      HASURA_GRAPHQL_DEV_MODE: "${HASURA_GRAPHQL_DEV_MODE:-false}"
+      HASURA_GRAPHQL_ADMIN_SECRET: ${SERVICE_PASSWORD_HASURA_ADMIN}
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      HASURA_GRAPHQL_JWT_SECRET: ${HASURA_GRAPHQL_JWT_SECRET}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "timeout 1s bash -c ':> /dev/tcp/127.0.0.1/8080' || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${SERVICE_USER_RABBITMQ}
+      RABBITMQ_DEFAULT_PASS: ${SERVICE_PASSWORD_RABBITMQ}
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      hasura:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      # Auth0 Configuration
+      VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN}
+      VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID}
+      # Hasura Configuration
+      HASURA_ENDPOINT: ${HASURA_ENDPOINT}
+      SERVICE_PASSWORD_HASURA_ADMIN: ${SERVICE_PASSWORD_HASURA_ADMIN}
+      # RabbitMQ Configuration
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      SERVICE_USER_RABBITMQ: ${SERVICE_USER_RABBITMQ}
+      SERVICE_PASSWORD_RABBITMQ: ${SERVICE_PASSWORD_RABBITMQ}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Consumer Worker
+  backend-consumer:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      hasura:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      # Auth0 Configuration
+      VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN}
+      VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID}
+      # Hasura Configuration
+      HASURA_ENDPOINT: ${HASURA_ENDPOINT}
+      SERVICE_PASSWORD_HASURA_ADMIN: ${SERVICE_PASSWORD_HASURA_ADMIN}
+      # RabbitMQ Configuration
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      SERVICE_USER_RABBITMQ: ${SERVICE_USER_RABBITMQ}
+      SERVICE_PASSWORD_RABBITMQ: ${SERVICE_PASSWORD_RABBITMQ}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST}
+    command: python consumer_worker.py
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import sys; sys.exit(0)' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend (Vite + React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_AUTH0_DOMAIN=${VITE_AUTH0_DOMAIN}
+        - VITE_AUTH0_CLIENT_ID=${VITE_AUTH0_CLIENT_ID}
+        - VITE_API_URL=${VITE_API_URL}
+        - VITE_HASURA_ENDPOINT=${VITE_HASURA_ENDPOINT}
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - hasura
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  rabbitmq_data:

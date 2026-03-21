@@ -1,0 +1,62 @@
+table:
+  name: users
+  schema: public
+select_permissions:
+  - role: user
+    permission:
+      columns:
+        - date_joined
+        - email
+        - email_verified
+        - family_name
+        - given_name
+        - id
+        - is_admin
+        - locale
+        - name
+        - nickname
+        - picture
+        - timezone
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+    comment: ""
+insert_permissions:
+  - role: user
+    permission:
+      columns:
+        - email
+        - email_verified
+        - name
+        - given_name
+        - family_name
+        - nickname
+        - picture
+        - last_login
+        - timezone
+        - locale
+      check:
+        id:
+          _eq: X-Hasura-User-Id
+      set:
+        id: x-hasura-user-id
+    comment: ""
+update_permissions:
+  - role: user
+    permission:
+      columns:
+        - email
+        - email_verified
+        - name
+        - given_name
+        - family_name
+        - nickname
+        - picture
+        - last_login
+        - timezone
+        - locale
+      filter:
+        id:
+          _eq: X-Hasura-User-Id
+      check: {}
+    comment: ""
