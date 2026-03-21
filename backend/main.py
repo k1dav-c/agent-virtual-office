@@ -9,6 +9,7 @@ from core.rabbitmq import rabbitmq_connection
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from modules import auth
+from modules.mcp import create_mcp_app
 
 
 @asynccontextmanager
@@ -28,8 +29,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="FastAPI Auth0 Template",
-    description="A template for FastAPI with Auth0, RabbitMQ, and Hasura.",
+    title="Agent Virtual Office",
+    description="FastAPI backend with Auth0, RabbitMQ, Hasura, and MCP server.",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -46,11 +47,15 @@ app.add_middleware(
 # Include module routers
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 
+# Mount MCP server as ASGI sub-app at /mcp (v2 SDK — Streamable HTTP)
+# Wrapped with ApiKeyAuthMiddleware — requires Authorization: Bearer <api_key>
+app.mount("/mcp", create_mcp_app())
+
 
 @app.get("/", tags=["General"])
 async def root():
     """Root endpoint providing a welcome message."""
-    return {"message": "FastAPI Auth0 Template is running!"}
+    return {"message": "Agent Virtual Office is running!"}
 
 
 @app.get("/health", tags=["General"])

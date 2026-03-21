@@ -2,4 +2,4 @@
 Feature Modules
 """
 
-from . import auth
+from . import auth, mcp
