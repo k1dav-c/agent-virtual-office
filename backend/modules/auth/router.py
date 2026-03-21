@@ -60,7 +60,7 @@ async def auth0_webhook_receiver(
             extra={"error": str(error)},
         )
         # Depending on requirements, you might want to raise an HTTPException here
-        # For this template, we'll just log the error and let the client receive a 500
+        # Log the error and let the client receive a 500
         raise
 
 

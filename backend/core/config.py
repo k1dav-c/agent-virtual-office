@@ -16,7 +16,7 @@ class Settings(BaseModel):
     Application settings, loaded from environment variables.
     """
 
-    app_name: str = "FastAPI Auth0 Template"
+    app_name: str = "Agent Virtual Office"
 
     # Auth0 Configuration
     auth0_domain: str = os.environ["VITE_AUTH0_DOMAIN"]
