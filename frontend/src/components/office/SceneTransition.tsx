@@ -3,12 +3,28 @@ import { useEffect, useRef, useState } from "react";
 import type { AgentSession, OfficeScene } from "../../types/agent";
 import SceneRenderer from "./SceneRenderer";
 
+interface FlyingTaskData {
+  id: string;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  type: "task" | "complete";
+}
+
 interface Props {
   scene: OfficeScene;
   agents: AgentSession[];
+  flyingTasks?: FlyingTaskData[];
+  onFlyingTaskComplete?: (id: string) => void;
 }
 
-export default function SceneTransition({ scene, agents }: Props) {
+export default function SceneTransition({
+  scene,
+  agents,
+  flyingTasks,
+  onFlyingTaskComplete,
+}: Props) {
   const [currentScene, setCurrentScene] = useState(scene);
   const [transitioning, setTransitioning] = useState(false);
   const prevLevelRef = useRef(scene.level);
@@ -50,7 +66,12 @@ export default function SceneTransition({ scene, agents }: Props) {
           transitioning ? "opacity-0" : "opacity-100"
         }`}
       >
-        <SceneRenderer scene={currentScene} agents={agents} />
+        <SceneRenderer
+          scene={currentScene}
+          agents={agents}
+          flyingTasks={flyingTasks}
+          onFlyingTaskComplete={onFlyingTaskComplete}
+        />
       </div>
     </div>
   );

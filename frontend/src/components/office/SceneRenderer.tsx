@@ -1,32 +1,46 @@
 import type { AgentSession, OfficeScene } from "../../types/agent";
 import AgentCharacter from "./AgentCharacter";
+import FlyingTask from "./FlyingTask";
+import IsometricBackground from "./IsometricBackground";
 import {
-  Bookshelf,
   CoffeeMachine,
   DeskLamp,
   Fountain,
-  GarageDoor,
   HologramDisplay,
   MeetingRoom,
   NeonSign,
   PizzaBox,
   Plant,
-  Poster,
   Printer,
   RobotAssistant,
-  Shelf,
   SnackBar,
   WallTV,
   WaterCooler,
   Whiteboard,
 } from "./PixelDecorations";
 
+interface FlyingTaskData {
+  id: string;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  type: "task" | "complete";
+}
+
 interface Props {
   scene: OfficeScene;
   agents: AgentSession[];
+  flyingTasks?: FlyingTaskData[];
+  onFlyingTaskComplete?: (id: string) => void;
 }
 
-export default function SceneRenderer({ scene, agents }: Props) {
+export default function SceneRenderer({
+  scene,
+  agents,
+  flyingTasks,
+  onFlyingTaskComplete,
+}: Props) {
   return (
     <div
       className="relative w-full overflow-hidden rounded-2xl border-2"
@@ -37,90 +51,15 @@ export default function SceneRenderer({ scene, agents }: Props) {
         imageRendering: "auto",
       }}
     >
-      {/* Wall */}
-      <div
-        className="absolute inset-x-0 top-0 h-[35%]"
-        style={{ backgroundColor: scene.wallColor }}
-      >
-        {/* Wall decorations */}
-        {scene.level >= 3 && (
-          <div className="absolute top-4 left-8 w-16 h-10 rounded border-2 border-gray-400/30 bg-gray-200/20" />
-        )}
-        {scene.level >= 4 && (
-          <div className="absolute top-4 right-8 w-20 h-12 rounded border-2 border-gray-400/30 bg-gray-200/20" />
-        )}
-
-        {/* Level-specific wall details */}
-        {scene.level === 1 && (
-          <>
-            {/* Garage door */}
-            <div className="absolute bottom-0 left-[5%]">
-              <GarageDoor />
-            </div>
-            {/* Poster on wall */}
-            <div className="absolute top-[10%] right-[8%]">
-              <Poster accent={scene.accentColor} />
-            </div>
-          </>
-        )}
-        {scene.level === 2 && (
-          <>
-            {/* Bookshelf on wall */}
-            <div className="absolute bottom-0 right-[5%]">
-              <Bookshelf />
-            </div>
-          </>
-        )}
-        {scene.level === 5 && (
-          <div className="absolute top-[10%] left-[40%]">
-            <WallTV accent={scene.accentColor} />
-          </div>
-        )}
-        {scene.level === 6 && (
-          <>
-            {/* Neon strips */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-0.5 animate-pulse"
-              style={{ backgroundColor: scene.accentColor, opacity: 0.6 }}
-            />
-            <div
-              className="absolute top-0 left-0 right-0 h-0.5 animate-pulse"
-              style={{ backgroundColor: scene.accentColor, opacity: 0.3 }}
-            />
-            {/* Neon sign */}
-            <div className="absolute top-[15%] right-[10%]">
-              <NeonSign accent={scene.accentColor} />
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Floor */}
-      <div
-        className="absolute inset-x-0 bottom-0 h-[65%]"
-        style={{ backgroundColor: scene.floorColor }}
-      >
-        {/* Garage floor — shelf */}
-        {scene.level === 1 && (
-          <div className="absolute top-[5%] right-[5%]">
-            <Shelf />
-          </div>
-        )}
-        {/* Floor pattern */}
-        {scene.level >= 3 && (
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: `repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 48px,
-                rgba(0,0,0,0.1) 48px,
-                rgba(0,0,0,0.1) 50px
-              )`,
-            }}
-          />
-        )}
+      {/* Isometric SVG background */}
+      <div className="absolute inset-0 z-0">
+        <IsometricBackground
+          level={scene.level}
+          bgColor={scene.bgColor}
+          wallColor={scene.wallColor}
+          floorColor={scene.floorColor}
+          accentColor={scene.accentColor}
+        />
       </div>
 
       {/* Scene label */}
@@ -236,6 +175,19 @@ export default function SceneRenderer({ scene, agents }: Props) {
         if (!pos) return null;
         return <AgentCharacter key={agent.id} agent={agent} position={pos} />;
       })}
+
+      {/* Flying task animations */}
+      {flyingTasks?.map((task) => (
+        <FlyingTask
+          key={task.id}
+          fromX={task.fromX}
+          fromY={task.fromY}
+          toX={task.toX}
+          toY={task.toY}
+          type={task.type}
+          onComplete={() => onFlyingTaskComplete?.(task.id)}
+        />
+      ))}
 
       {/* Empty state */}
       {agents.length === 0 && (

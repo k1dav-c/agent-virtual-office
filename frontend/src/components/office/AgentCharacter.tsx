@@ -105,6 +105,22 @@ export default function AgentCharacter({ agent, position }: Props) {
         </div>
       )}
 
+      {/* Neon glow aura for working agents */}
+      {agent.status === "working" && (
+        <div
+          className="absolute agent-neon-glow pointer-events-none"
+          style={{
+            width: 90,
+            height: 90,
+            left: "50%",
+            top: -32,
+            background: `radial-gradient(circle, ${roleConfig.color}35 0%, ${roleConfig.color}10 45%, transparent 70%)`,
+            borderRadius: "50%",
+            zIndex: -1,
+          }}
+        />
+      )}
+
       {/* Desk */}
       <div
         className="w-14 h-8 rounded-sm relative"
@@ -116,14 +132,12 @@ export default function AgentCharacter({ agent, position }: Props) {
       >
         {/* Monitor on desk */}
         <div
-          className="absolute -top-5 left-1/2 -translate-x-1/2 w-8 h-6 rounded-sm border-2 flex items-center justify-center overflow-hidden"
+          className={`absolute -top-5 left-1/2 -translate-x-1/2 w-8 h-6 rounded-sm border-2 flex items-center justify-center overflow-hidden ${
+            agent.status === "working" ? "monitor-neon-glow" : ""
+          }`}
           style={{
             backgroundColor: "#1a1a2e",
             borderColor: "#333",
-            boxShadow:
-              agent.status === "working"
-                ? "0 0 8px rgba(74, 222, 128, 0.4)"
-                : undefined,
           }}
         >
           <div
@@ -168,9 +182,15 @@ export default function AgentCharacter({ agent, position }: Props) {
         {/* Status indicator */}
         <div
           className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border border-white ${
-            agent.status === "working" ? "animate-pulse" : ""
+            agent.status === "working" ? "status-glow-pulse" : ""
           }`}
-          style={{ backgroundColor: statusColor.bg }}
+          style={{
+            backgroundColor: statusColor.bg,
+            ["--glow-color" as string]: statusColor.bg,
+            ...(agent.status === "working"
+              ? { boxShadow: `0 0 6px ${statusColor.bg}, 0 0 12px ${statusColor.bg}` }
+              : {}),
+          }}
         />
       </div>
 
@@ -184,6 +204,9 @@ export default function AgentCharacter({ agent, position }: Props) {
           style={{
             backgroundColor: roleConfig.bgColor,
             color: roleConfig.color,
+            ...(agent.status === "working"
+              ? { textShadow: `0 0 4px ${roleConfig.color}, 0 0 8px ${roleConfig.color}80` }
+              : {}),
           }}
         >
           {roleConfig.emoji} {roleConfig.label}
