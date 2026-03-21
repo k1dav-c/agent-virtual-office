@@ -12,10 +12,7 @@ export default function McpConfigSnippet() {
       mcpServers: {
         "virtual-office": {
           type: "streamable-http",
-          url: `${API_URL}/mcp/mcp`,
-          headers: {
-            Authorization: "Bearer <YOUR_API_KEY>",
-          },
+          url: `${API_URL}/mcp/mcp?api_key=<YOUR_API_KEY>`,
         },
       },
     },
