@@ -192,7 +192,7 @@ export default function OfficePage() {
                                     href={`${getCoderHost()}/@me/${agent.workspace}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-[9px] text-[#88c0d0] hover:underline"
+                                    className="text-[9px] text-[#a3be8c] font-bold hover:text-[#b8d4a3] hover:underline"
                                   >
                                     💻 workspace
                                   </a>
