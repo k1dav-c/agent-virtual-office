@@ -1,0 +1,146 @@
+import type { OfficeScene } from "../types/agent";
+
+export const OFFICE_SCENES: OfficeScene[] = [
+  {
+    level: 1,
+    name: "Garage",
+    nameZh: "車庫創業",
+    minAgents: 0,
+    maxAgents: 3,
+    description:
+      "A humble garage startup — folding tables, whiteboards, and pizza boxes",
+    bgColor: "#2d2d2d",
+    floorColor: "#4a4a4a",
+    wallColor: "#3d3d3d",
+    accentColor: "#ff9f43",
+    deskPositions: [
+      { x: 15, y: 55, direction: "right" },
+      { x: 45, y: 55, direction: "left" },
+      { x: 75, y: 55, direction: "right" },
+    ],
+    decorations: ["whiteboard", "pizza-box", "lamp"],
+  },
+  {
+    level: 2,
+    name: "Co-working",
+    nameZh: "共享空間",
+    minAgents: 4,
+    maxAgents: 6,
+    description: "A cozy co-working café with long tables and coffee machines",
+    bgColor: "#f5e6d3",
+    floorColor: "#d4a574",
+    wallColor: "#e8d5c4",
+    accentColor: "#6c5ce7",
+    deskPositions: [
+      { x: 10, y: 45, direction: "right" },
+      { x: 30, y: 45, direction: "right" },
+      { x: 50, y: 45, direction: "left" },
+      { x: 10, y: 72, direction: "right" },
+      { x: 30, y: 72, direction: "left" },
+      { x: 50, y: 72, direction: "right" },
+    ],
+    decorations: ["coffee-machine", "plant", "bookshelf"],
+  },
+  {
+    level: 3,
+    name: "Startup",
+    nameZh: "新創辦公室",
+    minAgents: 7,
+    maxAgents: 10,
+    description:
+      "An open-plan startup office with meeting rooms and a snack bar",
+    bgColor: "#f0f4f8",
+    floorColor: "#c8d6e5",
+    wallColor: "#dfe6ed",
+    accentColor: "#00b894",
+    deskPositions: [
+      { x: 8, y: 35, direction: "right" },
+      { x: 24, y: 35, direction: "right" },
+      { x: 40, y: 35, direction: "left" },
+      { x: 56, y: 35, direction: "right" },
+      { x: 72, y: 35, direction: "left" },
+      { x: 8, y: 65, direction: "right" },
+      { x: 24, y: 65, direction: "left" },
+      { x: 40, y: 65, direction: "right" },
+      { x: 56, y: 65, direction: "left" },
+      { x: 72, y: 65, direction: "right" },
+    ],
+    decorations: ["meeting-room", "snack-bar", "tv-screen", "plant"],
+  },
+  {
+    level: 4,
+    name: "Corporate",
+    nameZh: "企業辦公室",
+    minAgents: 11,
+    maxAgents: 15,
+    description: "A professional corporate office with dedicated departments",
+    bgColor: "#eef2f7",
+    floorColor: "#b8c5d4",
+    wallColor: "#d5dde8",
+    accentColor: "#0984e3",
+    deskPositions: [
+      { x: 6, y: 28, direction: "right" },
+      { x: 18, y: 28, direction: "right" },
+      { x: 30, y: 28, direction: "left" },
+      { x: 44, y: 28, direction: "right" },
+      { x: 56, y: 28, direction: "left" },
+      { x: 6, y: 50, direction: "right" },
+      { x: 18, y: 50, direction: "left" },
+      { x: 30, y: 50, direction: "right" },
+      { x: 44, y: 50, direction: "left" },
+      { x: 56, y: 50, direction: "right" },
+      { x: 6, y: 72, direction: "right" },
+      { x: 18, y: 72, direction: "left" },
+      { x: 30, y: 72, direction: "right" },
+      { x: 44, y: 72, direction: "left" },
+      { x: 56, y: 72, direction: "right" },
+    ],
+    decorations: ["reception", "meeting-room", "water-cooler", "printer"],
+  },
+  {
+    level: 5,
+    name: "Tech Campus",
+    nameZh: "科技園區",
+    minAgents: 16,
+    maxAgents: 20,
+    description: "A sprawling tech campus with gardens and multiple buildings",
+    bgColor: "#e8f5e9",
+    floorColor: "#a5d6a7",
+    wallColor: "#c8e6c9",
+    accentColor: "#e17055",
+    deskPositions: Array.from({ length: 20 }, (_, i) => ({
+      x: 6 + (i % 5) * 18,
+      y: 25 + Math.floor(i / 5) * 20,
+      direction: (i % 2 === 0 ? "right" : "left") as "left" | "right",
+    })),
+    decorations: ["garden", "gym", "cafeteria", "fountain"],
+  },
+  {
+    level: 6,
+    name: "HQ of the Future",
+    nameZh: "未來總部",
+    minAgents: 21,
+    maxAgents: Infinity,
+    description:
+      "A sci-fi headquarters with holographic displays and sky bridges",
+    bgColor: "#0a0a2e",
+    floorColor: "#1a1a4e",
+    wallColor: "#12123e",
+    accentColor: "#00fff5",
+    deskPositions: Array.from({ length: 30 }, (_, i) => ({
+      x: 5 + (i % 6) * 15,
+      y: 20 + Math.floor(i / 6) * 16,
+      direction: (i % 2 === 0 ? "right" : "left") as "left" | "right",
+    })),
+    decorations: ["hologram", "sky-bridge", "neon-lights", "robot"],
+  },
+];
+
+export function getSceneForAgentCount(count: number): OfficeScene {
+  for (const scene of OFFICE_SCENES) {
+    if (count >= scene.minAgents && count <= scene.maxAgents) {
+      return scene;
+    }
+  }
+  return OFFICE_SCENES[OFFICE_SCENES.length - 1];
+}
