@@ -14,7 +14,7 @@ from .server import mcp
 
 # Build the Starlette app once at import time; grab the session manager
 # so main.py can start it inside FastAPI's lifespan context.
-_starlette_app = mcp.streamable_http_app()
+_starlette_app = mcp.streamable_http_app(host="0.0.0.0")
 session_manager = mcp._lowlevel_server._session_manager
 
 
