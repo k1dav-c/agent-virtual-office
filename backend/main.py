@@ -9,7 +9,7 @@ from core.rabbitmq import rabbitmq_connection
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from modules import auth
-from modules.mcp import create_mcp_app
+from modules.mcp import create_mcp_app, session_manager
 
 
 @asynccontextmanager
@@ -22,7 +22,9 @@ async def lifespan(app: FastAPI):
     except Exception as error:
         logger.error("Failed to initialize RabbitMQ", extra={"error": str(error)})
 
-    yield
+    # Start MCP session manager (mounted sub-apps don't get lifespan events)
+    async with session_manager.run():
+        yield
 
     logger.info("Shutting down FastAPI application")
     await rabbitmq_connection.close()
