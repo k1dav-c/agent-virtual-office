@@ -77,6 +77,7 @@ export default function ApiKeyManager() {
   const [newKey, setNewKey] = useState<string | null>(null);
   const [keyName, setKeyName] = useState("Default");
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchKeys = useCallback(async () => {
     try {
@@ -85,6 +86,7 @@ export default function ApiKeyManager() {
       setKeys(data.api_keys);
     } catch (err) {
       console.error("Failed to fetch API keys:", err);
+      setError(`載入失敗: ${err instanceof Error ? err.message : err}`);
     } finally {
       setLoading(false);
     }
@@ -96,6 +98,7 @@ export default function ApiKeyManager() {
 
   const handleCreate = async () => {
     setCreating(true);
+    setError(null);
     try {
       const rawKey = generateApiKey();
       const keyHash = await sha256(rawKey);
@@ -111,6 +114,7 @@ export default function ApiKeyManager() {
       await fetchKeys();
     } catch (err) {
       console.error("Failed to create API key:", err);
+      setError(`建立失敗: ${err instanceof Error ? err.message : err}`);
     } finally {
       setCreating(false);
     }
@@ -162,6 +166,20 @@ export default function ApiKeyManager() {
           🔑 Generate
         </Button>
       </div>
+
+      {/* ── Error ── */}
+      {error && (
+        <div
+          className="p-3 text-[11px] text-[#bf616a]"
+          style={{
+            background: "rgba(191, 97, 106, 0.15)",
+            border: "3px solid #bf616a",
+            borderRadius: 2,
+          }}
+        >
+          ❌ {error}
+        </div>
+      )}
 
       {/* ── New key flash ── */}
       {newKey && (
