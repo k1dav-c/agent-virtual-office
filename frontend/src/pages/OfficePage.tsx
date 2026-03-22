@@ -1,15 +1,33 @@
 import { getCoderHost } from "@components/CoderHostSetting";
 import PixelLayout from "@components/PixelLayout";
 import VirtualOffice from "@components/office/VirtualOffice";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ROLE_CONFIGS, STATUS_COLORS } from "../config/agent-roles";
 import { useAgentSessions } from "../hooks/useAgentSessions";
 import type { AgentRole } from "../types/agent";
+
+function formatDuration(startedAt: string): string {
+  const diff = Date.now() - new Date(startedAt).getTime();
+  const secs = Math.floor(diff / 1000);
+  if (secs < 60) return `${secs}s`;
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  const remainMins = mins % 60;
+  return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
+}
 
 export default function OfficePage() {
   const { sessions, loading, error } = useAgentSessions();
   const [panelOpen, setPanelOpen] = useState(false);
   const [highlightStatus, setHighlightStatus] = useState<string | null>(null);
+  const [, setTick] = useState(0);
+
+  // Re-render every 30s to update session durations
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const statusCounts = {
     working: sessions.filter((s) => s.status === "working").length,
@@ -180,6 +198,9 @@ export default function OfficePage() {
                                     style={{ color: config.color }}
                                   >
                                     {config.label}
+                                  </span>
+                                  <span className="text-[8px] text-white/25 ml-auto flex-shrink-0">
+                                    ⏱ {formatDuration(agent.started_at)}
                                   </span>
                                 </div>
                                 {agent.summary && (

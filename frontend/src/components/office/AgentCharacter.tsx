@@ -35,6 +35,17 @@ export default function AgentCharacter({
     return `${Math.floor(mins / 60)}h ago`;
   };
 
+  const sessionDuration = () => {
+    const diff = Date.now() - new Date(agent.started_at).getTime();
+    const secs = Math.floor(diff / 1000);
+    if (secs < 60) return `${secs}s`;
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    const remainMins = mins % 60;
+    return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`;
+  };
+
   const coderHost = getCoderHost();
   const workspaceUrl =
     agent.workspace && coderHost ? `${coderHost}/@me/${agent.workspace}` : null;
@@ -162,7 +173,9 @@ export default function AgentCharacter({
               💻 {agent.workspace}
             </p>
           )}
-          <p className="text-gray-500 mt-1 text-[10px]">{timeSince()}</p>
+          <p className="text-gray-500 mt-1 text-[10px]">
+            ⏱ {sessionDuration()} · {timeSince()}
+          </p>
           {workspaceUrl && (
             <p className="text-gray-500 text-[9px] mt-0.5">
               Click to open workspace
