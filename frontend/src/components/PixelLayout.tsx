@@ -99,15 +99,10 @@ export default function PixelLayout({
       <main
         className="flex-1 overflow-auto relative"
         style={{
-          backgroundColor: "#8ec58e",
-          backgroundImage: `
-            linear-gradient(45deg, #82b882 25%, transparent 25%),
-            linear-gradient(-45deg, #82b882 25%, transparent 25%),
-            linear-gradient(45deg, transparent 75%, #82b882 75%),
-            linear-gradient(-45deg, transparent 75%, #82b882 75%)
-          `,
-          backgroundSize: "40px 40px",
-          backgroundPosition: "0 0, 0 20px, 20px -20px, -16px 0px",
+          backgroundColor: "#3c5956",
+          backgroundImage: `url("/assets/tiles/green-floor-3x3.png")`,
+          backgroundSize: "96px 96px",
+          backgroundRepeat: "repeat",
           imageRendering: "pixelated",
         }}
       >

@@ -22,7 +22,7 @@ const AGENT_SESSIONS_SUBSCRIPTION = `
   }
 `;
 
-const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 1 day
+const STALE_THRESHOLD_MS = 12 * 60 * 60 * 1000; // 12 hours
 
 export function useAgentSessions() {
   const { getIdTokenClaims } = useAuth0();
@@ -34,8 +34,12 @@ export function useAgentSessions() {
   const filterActive = useCallback((allSessions: AgentSession[]) => {
     const now = Date.now();
     return allSessions.filter((s) => {
+      const started = new Date(s.started_at).getTime();
       const heartbeat = new Date(s.last_heartbeat_at).getTime();
-      return now - heartbeat < STALE_THRESHOLD_MS;
+      return (
+        now - started < STALE_THRESHOLD_MS &&
+        now - heartbeat < STALE_THRESHOLD_MS
+      );
     });
   }, []);
 

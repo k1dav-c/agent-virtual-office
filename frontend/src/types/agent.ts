@@ -54,3 +54,28 @@ export interface OfficeScene {
   deskPositions: DeskPosition[];
   decorations: string[];
 }
+
+export type SeatZone = "work" | "break" | "meeting" | "idle";
+
+export interface SeatPosition {
+  x: number;
+  y: number;
+  direction: "up" | "down" | "left" | "right";
+  deskX: number;
+  deskY: number;
+  zone: SeatZone;
+}
+
+export interface TileLayer {
+  name: string;
+  data: number[];
+  depth: number;
+}
+
+export interface TileMapData {
+  width: number;
+  height: number;
+  tileSize: number;
+  layers: TileLayer[];
+  seats: SeatPosition[];
+}

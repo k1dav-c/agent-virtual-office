@@ -1,23 +1,78 @@
-import type { AgentSession, OfficeScene } from "../../types/agent";
+import { useMemo } from "react";
+
+import { OFFICE_MAP, assignSeats } from "../../config/office-map";
+import { useWandering } from "../../hooks/useWandering";
+import type { AgentSession } from "../../types/agent";
 import AgentCharacter from "./AgentCharacter";
 import FlyingTask from "./FlyingTask";
-import IsometricBackground from "./IsometricBackground";
-import {
-  CoffeeMachine,
-  DeskLamp,
-  Fountain,
-  HologramDisplay,
-  MeetingRoom,
-  NeonSign,
-  PizzaBox,
-  Plant,
-  Printer,
-  RobotAssistant,
-  SnackBar,
-  WallTV,
-  WaterCooler,
-  Whiteboard,
-} from "./PixelDecorations";
+import PixelClock from "./PixelClock";
+import TileMap from "./TileMap";
+
+function ZoneSign({
+  x,
+  y,
+  tileSize,
+  label,
+  emoji,
+}: {
+  x: number;
+  y: number;
+  tileSize: number;
+  label: string;
+  emoji: string;
+}) {
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        left: x * tileSize,
+        top: y * tileSize,
+        zIndex: 5,
+        width: 64,
+        height: 48,
+      }}
+    >
+      {/* Signboard PNG background */}
+      <img
+        src="/assets/tiles/signboard.png"
+        alt=""
+        draggable={false}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: 64,
+          height: 48,
+          imageRendering: "pixelated",
+        }}
+      />
+      {/* Text on the sign face */}
+      <div
+        className="absolute flex flex-col items-center justify-center"
+        style={{
+          left: 8,
+          top: 6,
+          width: 48,
+          height: 18,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 7,
+            fontWeight: 800,
+            color: "#5a3d1a",
+            fontFamily: "'Courier New', monospace",
+            whiteSpace: "nowrap",
+            letterSpacing: "0.5px",
+            lineHeight: 1,
+            textShadow: "0 0.5px 0 rgba(210,180,130,0.6)",
+          }}
+        >
+          {emoji} {label}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 interface FlyingTaskData {
   id: string;
@@ -29,161 +84,71 @@ interface FlyingTaskData {
 }
 
 interface Props {
-  scene: OfficeScene;
   agents: AgentSession[];
   flyingTasks?: FlyingTaskData[];
   onFlyingTaskComplete?: (id: string) => void;
+  highlightStatus?: string | null;
 }
 
 export default function SceneRenderer({
-  scene,
   agents,
   flyingTasks,
   onFlyingTaskComplete,
+  highlightStatus,
 }: Props) {
+  const deskSeats = useMemo(
+    () => assignSeats(agents.filter((a) => a.status === "working")),
+    [agents],
+  );
+
+  const positions = useWandering(agents, deskSeats);
+
+  const tileSize = OFFICE_MAP.tileSize;
+  const mapW = OFFICE_MAP.width * tileSize;
+  const mapH = OFFICE_MAP.height * tileSize;
+
   return (
-    <div
-      className="relative w-full overflow-hidden rounded-2xl border-2"
-      style={{
-        backgroundColor: scene.bgColor,
-        borderColor: scene.accentColor + "40",
-        aspectRatio: "16/9",
-        imageRendering: "auto",
-      }}
-    >
-      {/* Isometric SVG background */}
-      <div className="absolute inset-0 z-0">
-        <IsometricBackground
-          level={scene.level}
-          bgColor={scene.bgColor}
-          wallColor={scene.wallColor}
-          floorColor={scene.floorColor}
-          accentColor={scene.accentColor}
-        />
-      </div>
+    <TileMap map={OFFICE_MAP}>
+      {/* Wall clock */}
+      <PixelClock x={12} y={0} tileSize={tileSize} />
 
-      {/* Scene label */}
-      <div className="absolute top-3 left-4 z-20">
-        <div
-          className="px-3 py-1.5 rounded-lg text-xs font-bold backdrop-blur-sm"
-          style={{
-            backgroundColor: scene.accentColor + "20",
-            color: scene.level === 6 ? scene.accentColor : scene.accentColor,
-            border: `1px solid ${scene.accentColor}40`,
-          }}
-        >
-          Lv.{scene.level} {scene.nameZh}
-        </div>
-      </div>
+      {/* Zone signboards */}
+      <ZoneSign x={1} y={1} tileSize={tileSize} emoji="💻" label="Work Area" />
+      <ZoneSign x={15} y={0} tileSize={tileSize} emoji="🆘" label="Meeting" />
+      <ZoneSign
+        x={15}
+        y={9}
+        tileSize={tileSize}
+        emoji="☕"
+        label="Break Room"
+      />
+      <ZoneSign x={9} y={3} tileSize={tileSize} emoji="🚶" label="Hallway" />
 
-      {/* Agent count */}
-      <div className="absolute top-3 right-4 z-20">
-        <div
-          className="px-3 py-1.5 rounded-lg text-xs font-bold backdrop-blur-sm"
-          style={{
-            backgroundColor: "rgba(0,0,0,0.3)",
-            color: "#fff",
-          }}
-        >
-          {agents.length} agent{agents.length !== 1 ? "s" : ""} online
-        </div>
-      </div>
-
-      {/* Decorative elements based on scene — pixel art SVGs */}
-      {scene.decorations.includes("plant") && (
-        <div className="absolute bottom-[12%] right-[4%] z-5">
-          <Plant />
-        </div>
-      )}
-      {scene.decorations.includes("coffee-machine") && (
-        <div className="absolute bottom-[12%] right-[14%] z-5">
-          <CoffeeMachine />
-        </div>
-      )}
-      {scene.decorations.includes("whiteboard") && (
-        <div className="absolute top-[5%] right-[20%] z-5">
-          <Whiteboard />
-        </div>
-      )}
-      {scene.decorations.includes("pizza-box") && (
-        <div className="absolute bottom-[8%] left-[4%] z-5">
-          <PizzaBox />
-        </div>
-      )}
-      {scene.decorations.includes("lamp") && (
-        <div className="absolute bottom-[15%] right-[10%] z-5">
-          <DeskLamp accent={scene.accentColor} />
-        </div>
-      )}
-      {scene.decorations.includes("snack-bar") && (
-        <div className="absolute bottom-[8%] right-[5%] z-5">
-          <SnackBar />
-        </div>
-      )}
-      {scene.decorations.includes("tv-screen") && (
-        <div className="absolute top-[5%] left-[15%] z-5">
-          <WallTV accent={scene.accentColor} />
-        </div>
-      )}
-      {scene.decorations.includes("meeting-room") && (
-        <div className="absolute bottom-[10%] left-[78%] z-5 opacity-50">
-          <MeetingRoom />
-        </div>
-      )}
-      {scene.decorations.includes("water-cooler") && (
-        <div className="absolute bottom-[12%] right-[8%] z-5">
-          <WaterCooler />
-        </div>
-      )}
-      {scene.decorations.includes("printer") && (
-        <div className="absolute bottom-[8%] left-[70%] z-5">
-          <Printer />
-        </div>
-      )}
-      {scene.decorations.includes("garden") && (
-        <div className="absolute bottom-[5%] right-[3%] z-5">
-          <Plant />
-        </div>
-      )}
-      {scene.decorations.includes("fountain") && (
-        <div className="absolute bottom-[6%] left-[45%] z-5">
-          <Fountain />
-        </div>
-      )}
-      {scene.decorations.includes("hologram") && (
-        <div
-          className="absolute top-[20%] left-1/2 -translate-x-1/2 z-5"
-          style={{ filter: `drop-shadow(0 0 8px ${scene.accentColor})` }}
-        >
-          <HologramDisplay accent={scene.accentColor} />
-        </div>
-      )}
-      {scene.decorations.includes("neon-lights") && (
-        <div className="absolute top-[8%] left-[10%] z-5">
-          <NeonSign accent={scene.accentColor} />
-        </div>
-      )}
-      {scene.decorations.includes("robot") && (
-        <div className="absolute bottom-[6%] left-[3%] z-5">
-          <RobotAssistant />
-        </div>
-      )}
-
-      {/* Agents at desks */}
-      {agents.map((agent, index) => {
-        const pos = scene.deskPositions[index % scene.deskPositions.length];
+      {/* Agents */}
+      {agents.map((agent) => {
+        const pos = positions.get(agent.id);
         if (!pos) return null;
-        return <AgentCharacter key={agent.id} agent={agent} position={pos} />;
+        return (
+          <AgentCharacter
+            key={agent.id}
+            agent={agent}
+            seat={pos}
+            tileSize={tileSize}
+            isWandering={agent.status !== "working"}
+            isWalking={pos.isWalking}
+            highlighted={highlightStatus === agent.status}
+          />
+        );
       })}
 
       {/* Flying task animations */}
       {flyingTasks?.map((task) => (
         <FlyingTask
           key={task.id}
-          fromX={task.fromX}
-          fromY={task.fromY}
-          toX={task.toX}
-          toY={task.toY}
+          fromX={((task.fromX * tileSize) / mapW) * 100}
+          fromY={((task.fromY * tileSize) / mapH) * 100}
+          toX={((task.toX * tileSize) / mapW) * 100}
+          toY={((task.toY * tileSize) / mapH) * 100}
           type={task.type}
           onComplete={() => onFlyingTaskComplete?.(task.id)}
         />
@@ -192,23 +157,15 @@ export default function SceneRenderer({
       {/* Empty state */}
       {agents.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="text-center p-6 rounded-xl backdrop-blur-sm bg-black/20">
+          <div className="text-center p-6 rounded-xl backdrop-blur-sm bg-black/30">
             <p className="text-4xl mb-3">🏢</p>
-            <p
-              className="text-lg font-bold"
-              style={{ color: scene.accentColor }}
-            >
-              Office is empty
-            </p>
-            <p
-              className="text-sm opacity-70 mt-1"
-              style={{ color: scene.accentColor }}
-            >
+            <p className="text-lg font-bold text-white">Office is empty</p>
+            <p className="text-sm text-gray-300 mt-1">
               Start a Claude Code session to see agents appear
             </p>
           </div>
         </div>
       )}
-    </div>
+    </TileMap>
   );
 }

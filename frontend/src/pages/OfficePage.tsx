@@ -6,226 +6,243 @@ import { ROLE_CONFIGS, STATUS_COLORS } from "../config/agent-roles";
 import { useAgentSessions } from "../hooks/useAgentSessions";
 import type { AgentRole } from "../types/agent";
 
-const MONO = "'Courier New', monospace";
-
 export default function OfficePage() {
   const { sessions, loading, error } = useAgentSessions();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [highlightStatus, setHighlightStatus] = useState<string | null>(null);
 
-  const roleGroups = sessions.reduce(
-    (acc, s) => {
-      const role = s.role as AgentRole;
-      if (!acc[role]) acc[role] = [];
-      acc[role].push(s);
-      return acc;
-    },
-    {} as Record<string, typeof sessions>,
-  );
+  const statusCounts = {
+    working: sessions.filter((s) => s.status === "working").length,
+    idle: sessions.filter((s) => s.status === "idle").length,
+    complete: sessions.filter((s) => s.status === "complete").length,
+    failure: sessions.filter((s) => s.status === "failure").length,
+  };
 
   return (
     <PixelLayout>
-      <div className="absolute inset-0 flex" style={{ fontFamily: MONO }}>
-        {/* ── Full-screen office world ── */}
-        <div className="flex-1 relative">
-          {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div
-                  className="w-10 h-10 mx-auto mb-3 animate-spin"
-                  style={{
-                    border: "3px solid #4c566a",
-                    borderTop: "3px solid #5e81ac",
-                    borderRadius: 2,
-                  }}
-                />
-                <p
-                  className="text-xs text-[#2e3440] tracking-wider font-bold"
-                  style={{ textShadow: "1px 1px 0 rgba(255,255,255,0.3)" }}
+      <div className="absolute inset-0 flex flex-col">
+        {/* ═══ MAIN CONTENT: Map + Sidebar ═══ */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* ─── MAP AREA (left, takes remaining space) ─── */}
+          <div className="flex-1 relative overflow-hidden">
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-8 h-8 mx-auto mb-3 border-2 border-white/20 border-t-blue-400 rounded-full animate-spin" />
+                  <p className="text-xs text-white/60">Loading office...</p>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+                  <p className="text-xs text-red-400 font-bold">
+                    Connection failed
+                  </p>
+                  <p className="text-[10px] text-red-300/60 mt-1">
+                    {error.message}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <VirtualOffice agents={sessions} highlightStatus={highlightStatus} />
+            )}
+          </div>
+
+          {/* ─── SIDEBAR (right, fixed width) ─── */}
+          {sidebarOpen && (
+            <div
+              className="w-64 flex-shrink-0 flex flex-col z-30"
+              style={{
+                background: "rgba(30, 28, 36, 0.95)",
+                borderLeft: "3px solid #4c566a",
+              }}
+            >
+              {/* Sidebar header */}
+              <div className="px-4 py-2 flex items-center justify-end">
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="text-white/40 hover:text-white/80 text-sm cursor-pointer transition-colors"
                 >
-                  LOADING OFFICE...
-                </p>
+                  ✕
+                </button>
               </div>
-            </div>
-          ) : error ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className="text-center p-6"
-                style={{
-                  border: "3px solid #bf616a",
-                  borderRadius: 2,
-                  background: "rgba(191,97,106,0.1)",
-                }}
-              >
-                <p className="text-xs text-[#bf616a] font-bold tracking-wider">
-                  ⚠️ CONNECTION FAILED
-                </p>
-                <p className="text-[10px] text-[#6b7994] mt-2">
-                  {error.message}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <VirtualOffice agents={sessions} />
-          )}
-        </div>
+              <hr className="border-0 mx-3" style={{ borderTop: "2px solid #4c566a" }} />
 
-        {/* ── Game HUD sidebar ── */}
-        {sidebarOpen && (
-          <div
-            className="w-72 flex-shrink-0 flex flex-col overflow-hidden"
-            style={{
-              background: "rgba(46, 52, 64, 0.92)",
-              borderLeft: "4px solid #4c566a",
-            }}
-          >
-            {/* Sidebar header */}
-            <div
-              className="flex items-center justify-between px-4 py-2 flex-shrink-0"
-              style={{ borderBottom: "3px solid #4c566a" }}
-            >
-              <span className="text-[11px] font-bold text-[#d8dee9] tracking-wider">
-                📊 STATUS
-              </span>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="text-[10px] text-[#6b7994] font-bold cursor-pointer hover:text-[#bf616a] transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Status counters */}
-            <div
-              className="px-4 py-3 flex-shrink-0"
-              style={{ borderBottom: "3px solid #4c566a" }}
-            >
-              <div className="grid grid-cols-2 gap-2">
-                {Object.entries(STATUS_COLORS).map(([status, config]) => {
-                  const count = sessions.filter(
-                    (s) => s.status === status,
-                  ).length;
+              {/* Status summary bar */}
+              <div className="px-4 py-2 flex gap-3">
+                {Object.entries(statusCounts).map(([status, count]) => {
+                  if (count === 0) return null;
+                  const config =
+                    STATUS_COLORS[status as keyof typeof STATUS_COLORS];
+                  const isActive = highlightStatus === status;
                   return (
-                    <div
+                    <button
                       key={status}
-                      className="flex items-center gap-2 text-[10px]"
+                      className="flex items-center gap-1 cursor-pointer rounded px-1 transition-colors"
+                      style={{
+                        backgroundColor: isActive ? `${config.bg}22` : "transparent",
+                        border: isActive ? `1px solid ${config.bg}66` : "1px solid transparent",
+                      }}
+                      onClick={() => setHighlightStatus(isActive ? null : status)}
                     >
                       <div
-                        className="w-2.5 h-2.5 flex-shrink-0"
-                        style={{
-                          backgroundColor: config.bg,
-                          border: "1px solid #4c566a",
-                          borderRadius: 1,
-                        }}
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: config.bg }}
                       />
-                      <span className="text-[#8892a6]">
-                        {config.label}:{" "}
-                        <strong className="text-[#d8dee9]">{count}</strong>
+                      <span
+                        className="text-[9px] text-white/40"
+                        style={{ fontFamily: "'Courier New', monospace" }}
+                      >
+                        {config.label}
                       </span>
-                    </div>
+                      <span className="text-[9px] text-white/70 font-bold">
+                        {count}
+                      </span>
+                    </button>
                   );
                 })}
               </div>
-            </div>
 
-            {/* Agent list */}
-            <div className="flex-1 overflow-auto px-4 py-3">
-              <h3 className="font-bold text-[11px] text-[#d8dee9] mb-3 tracking-wider">
-                👥 AGENTS ({sessions.length})
-              </h3>
+              {/* Agent list */}
+              <div className="flex-1 overflow-auto px-2 py-1">
+                {sessions.map((agent) => {
+                  const config =
+                    ROLE_CONFIGS[agent.role as AgentRole] ||
+                    ROLE_CONFIGS.Developer;
+                  const status =
+                    STATUS_COLORS[agent.status] || STATUS_COLORS.idle;
+                  const coderHost = getCoderHost();
+                  const wsUrl =
+                    agent.workspace && coderHost
+                      ? `${coderHost}/@me/${agent.workspace}`
+                      : null;
 
-              {sessions.length === 0 ? (
-                <p className="text-[10px] text-[#6b7994]">No agents online</p>
-              ) : (
-                <div className="space-y-3">
-                  {Object.entries(roleGroups).map(([role, agents]) => {
-                    const config =
-                      ROLE_CONFIGS[role as AgentRole] || ROLE_CONFIGS.Developer;
-                    return (
-                      <div key={role}>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="text-xs">{config.emoji}</span>
+                  return (
+                    <div
+                      key={agent.id}
+                      className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-white/5 transition-colors group"
+                    >
+                      {/* Status dot */}
+                      <div
+                        className={`w-2 h-2 mt-1 rounded-full flex-shrink-0 ${
+                          agent.status === "working" ? "animate-pulse" : ""
+                        }`}
+                        style={{ backgroundColor: status.bg }}
+                      />
+
+                      <div className="flex-1 min-w-0">
+                        {/* Role name */}
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px]">{config.emoji}</span>
                           <span
-                            className="text-[10px] font-bold"
+                            className="text-[10px] font-semibold truncate"
                             style={{ color: config.color }}
                           >
                             {config.label}
                           </span>
-                          <span className="text-[10px] text-[#6b7994]">
-                            ({agents.length})
-                          </span>
                         </div>
-                        {agents.map((agent) => (
-                          <div
-                            key={agent.id}
-                            className="ml-5 py-1 flex items-start gap-2"
-                          >
-                            <div
-                              className={`w-2 h-2 mt-0.5 flex-shrink-0 ${
-                                agent.status === "working"
-                                  ? "animate-pulse"
-                                  : ""
-                              }`}
-                              style={{
-                                backgroundColor:
-                                  STATUS_COLORS[agent.status]?.bg || "#999",
-                                border: "1px solid #4c566a",
-                                borderRadius: 1,
-                              }}
-                            />
-                            <div>
-                              <p className="text-[10px] text-[#d8dee9] leading-snug">
-                                {agent.summary || "No status"}
-                              </p>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {agent.link && (
-                                  <a
-                                    href={agent.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[9px] text-[#5e81ac] hover:underline"
-                                  >
-                                    🔗 link
-                                  </a>
-                                )}
-                                {agent.workspace && getCoderHost() && (
-                                  <a
-                                    href={`${getCoderHost()}/@me/${agent.workspace}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[9px] text-[#a3be8c] font-bold hover:text-[#b8d4a3] hover:underline"
-                                  >
-                                    💻 workspace
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Toggle sidebar button (when closed) */}
-        {!sidebarOpen && (
+                        {/* Summary */}
+                        {agent.summary && (
+                          <p className="text-[9px] text-white/40 leading-snug mt-0.5 line-clamp-2">
+                            {agent.summary}
+                          </p>
+                        )}
+
+                        {/* Links */}
+                        <div className="flex gap-2 mt-0.5">
+                          {agent.link && (
+                            <a
+                              href={agent.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[9px] text-blue-400/70 hover:text-blue-400 hover:underline"
+                            >
+                              link
+                            </a>
+                          )}
+                          {wsUrl && (
+                            <a
+                              href={wsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[9px] text-green-400/70 hover:text-green-400 hover:underline"
+                            >
+                              workspace
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {sessions.length === 0 && (
+                  <div className="text-center py-6">
+                    <p className="text-[10px] text-white/30">
+                      No agents online
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ═══ BOTTOM ACTION BAR ═══ */}
+        <div
+          className="h-12 flex-shrink-0 flex items-center px-4 gap-3 z-30"
+          style={{
+            background: "rgba(0,0,0,0.9)",
+            borderTop: "3px solid #4c566a",
+          }}
+        >
+          {/* Logo / Title */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm">🏢</span>
+            <span className="text-[11px] font-bold text-white/80 tracking-wide">
+              Agent Virtual Office
+            </span>
+          </div>
+
+          <div className="flex-1" />
+
+          {/* Status indicators */}
+          <div className="flex items-center gap-4">
+            {Object.entries(statusCounts).map(([status, count]) => {
+              const config =
+                STATUS_COLORS[status as keyof typeof STATUS_COLORS];
+              return (
+                <div key={status} className="flex items-center gap-1.5">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: config.bg }}
+                  />
+                  <span className="text-[10px] text-white/50">
+                    {config.label}
+                  </span>
+                  <span className="text-[10px] text-white/80 font-bold">
+                    {count}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="w-px h-6 bg-white/10 mx-2" />
+
+          {/* Toggle sidebar */}
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="absolute top-2 right-2 z-20 px-3 py-1.5 text-[10px] font-bold text-[#d8dee9] cursor-pointer transition-colors"
-            style={{
-              background: "rgba(46, 52, 64, 0.85)",
-              border: "3px solid #4c566a",
-              borderRadius: 2,
-              fontFamily: MONO,
-              boxShadow: "3px 3px 0 rgba(0,0,0,0.4)",
-            }}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-semibold cursor-pointer transition-all ${
+              sidebarOpen
+                ? "bg-blue-500/30 text-blue-300 border border-blue-500/50"
+                : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white/70"
+            }`}
           >
-            📊 STATUS
+            👥 Users
           </button>
-        )}
+        </div>
       </div>
     </PixelLayout>
   );
