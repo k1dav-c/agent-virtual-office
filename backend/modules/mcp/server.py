@@ -94,9 +94,9 @@ INSERT_LOG = gql(
 async def report_status(
     summary: str,
     state: str,
+    session_id: str,
     link: str = "",
     workspace: str = "",
-    session_id: str = "",
 ) -> str:
     """
     Report your current working status to the Virtual Office.
@@ -110,11 +110,11 @@ async def report_status(
     Args:
         summary: A concise description of what you're currently doing (max 160 chars).
         state: Your current state - one of: working, complete, idle, failure.
-        link: Optional URL to a relevant resource (PR, issue, etc).
-        workspace: Optional Coder workspace identifier (e.g. owner/workspace-name).
         session_id: A unique identifier for this Claude Code session. Use a random UUID
                     generated once at the start of your session to distinguish multiple
                     concurrent sessions using the same API key.
+        link: Optional URL to a relevant resource (PR, issue, etc.).
+        workspace: Optional Coder workspace identifier (e.g. owner/workspace-name).
     """
     valid_states = {"working", "complete", "idle", "failure"}
     if state not in valid_states:
