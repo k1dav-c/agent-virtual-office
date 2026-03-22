@@ -8,7 +8,7 @@ import type { AgentRole } from "../types/agent";
 
 export default function OfficePage() {
   const { sessions, loading, error } = useAgentSessions();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
   const [highlightStatus, setHighlightStatus] = useState<string | null>(null);
 
   const statusCounts = {
@@ -21,61 +21,63 @@ export default function OfficePage() {
   return (
     <PixelLayout>
       <div className="absolute inset-0 flex flex-col">
-        {/* ═══ MAIN CONTENT: Map + Sidebar ═══ */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* ─── MAP AREA (left, takes remaining space) ─── */}
-          <div className="flex-1 relative overflow-hidden">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-8 h-8 mx-auto mb-3 border-2 border-white/20 border-t-blue-400 rounded-full animate-spin" />
-                  <p className="text-xs text-white/60">Loading office...</p>
-                </div>
+        {/* ═══ MAIN CONTENT: Full-screen map ═══ */}
+        <div className="flex-1 relative overflow-hidden">
+          {loading ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-8 h-8 mx-auto mb-3 border-2 border-white/20 border-t-blue-400 rounded-full animate-spin" />
+                <p className="text-xs text-white/60">Loading office...</p>
               </div>
-            ) : error ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
-                  <p className="text-xs text-red-400 font-bold">
-                    Connection failed
-                  </p>
-                  <p className="text-[10px] text-red-300/60 mt-1">
-                    {error.message}
-                  </p>
-                </div>
+            </div>
+          ) : error ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center p-4 bg-red-900/30 border border-red-500/50 rounded-lg">
+                <p className="text-xs text-red-400 font-bold">
+                  Connection failed
+                </p>
+                <p className="text-[10px] text-red-300/60 mt-1">
+                  {error.message}
+                </p>
               </div>
-            ) : (
-              <VirtualOffice
-                agents={sessions}
-                highlightStatus={highlightStatus}
-              />
-            )}
-          </div>
+            </div>
+          ) : (
+            <VirtualOffice
+              agents={sessions}
+              highlightStatus={highlightStatus}
+            />
+          )}
 
-          {/* ─── SIDEBAR (right, fixed width) ─── */}
-          {sidebarOpen && (
+          {/* ─── FLOATING USERS PANEL ─── */}
+          {panelOpen && (
             <div
-              className="w-64 flex-shrink-0 flex flex-col z-30"
+              className="absolute right-3 top-3 w-60 flex flex-col z-40 rounded-lg overflow-hidden"
               style={{
-                background: "rgba(30, 28, 36, 0.95)",
-                borderLeft: "3px solid #4c566a",
+                background: "rgba(30, 28, 36, 0.9)",
+                border: "2px solid #4c566a",
+                backdropFilter: "blur(8px)",
+                maxHeight: "calc(100% - 70px)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
               }}
             >
-              {/* Sidebar header */}
-              <div className="px-4 py-2 flex items-center justify-end">
+              {/* Panel header */}
+              <div className="px-3 py-2 flex items-center justify-between">
+                <span
+                  className="text-[10px] font-bold text-white/60 tracking-wide"
+                  style={{ fontFamily: "'Courier New', monospace" }}
+                >
+                  👥 Users ({sessions.length})
+                </span>
                 <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="text-white/40 hover:text-white/80 text-sm cursor-pointer transition-colors"
+                  onClick={() => setPanelOpen(false)}
+                  className="text-white/30 hover:text-white/70 text-xs cursor-pointer transition-colors"
                 >
                   ✕
                 </button>
               </div>
-              <hr
-                className="border-0 mx-3"
-                style={{ borderTop: "2px solid #4c566a" }}
-              />
 
-              {/* Status summary bar */}
-              <div className="px-4 py-2 flex gap-3">
+              {/* Status filter bar */}
+              <div className="px-3 py-1.5 flex gap-2 flex-wrap" style={{ borderTop: "1px solid #4c566a44" }}>
                 {Object.entries(statusCounts).map(([status, count]) => {
                   if (count === 0) return null;
                   const config =
@@ -98,16 +100,16 @@ export default function OfficePage() {
                       }
                     >
                       <div
-                        className="w-2 h-2 rounded-full"
+                        className="w-1.5 h-1.5 rounded-full"
                         style={{ backgroundColor: config.bg }}
                       />
                       <span
-                        className="text-[9px] text-white/40"
+                        className="text-[8px] text-white/40"
                         style={{ fontFamily: "'Courier New', monospace" }}
                       >
                         {config.label}
                       </span>
-                      <span className="text-[9px] text-white/70 font-bold">
+                      <span className="text-[8px] text-white/70 font-bold">
                         {count}
                       </span>
                     </button>
@@ -116,9 +118,8 @@ export default function OfficePage() {
               </div>
 
               {/* Agent list — grouped by session_id */}
-              <div className="flex-1 overflow-auto px-2 py-1">
+              <div className="flex-1 overflow-auto px-2 py-1" style={{ borderTop: "1px solid #4c566a44" }}>
                 {(() => {
-                  // Group sessions by session_id
                   const groups = new Map<string, typeof sessions>();
                   for (const agent of sessions) {
                     const key = agent.session_id || agent.id;
@@ -129,15 +130,15 @@ export default function OfficePage() {
 
                   return Array.from(groups.entries()).map(
                     ([sessionId, groupAgents]) => (
-                      <div key={sessionId} className="mb-2">
+                      <div key={sessionId} className="mb-1.5">
                         {/* Session group header */}
                         {groups.size > 1 && (
-                          <div className="flex items-center gap-1.5 px-2 py-1 mt-1">
-                            <span className="text-[9px] text-white/25 font-mono truncate">
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 mt-1">
+                            <span className="text-[8px] text-white/25 font-mono truncate">
                               {groupAgents[0].workspace ||
                                 sessionId.slice(0, 8)}
                             </span>
-                            <span className="text-[8px] text-white/15">
+                            <span className="text-[7px] text-white/15">
                               ({groupAgents.length})
                             </span>
                             <div className="flex-1 border-t border-white/5" />
@@ -159,47 +160,40 @@ export default function OfficePage() {
                           return (
                             <div
                               key={agent.id}
-                              className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-white/5 transition-colors group"
+                              className="flex items-start gap-2 px-2 py-1 rounded hover:bg-white/5 transition-colors"
                             >
-                              {/* Status dot */}
                               <div
-                                className={`w-2 h-2 mt-1 rounded-full flex-shrink-0 ${
+                                className={`w-1.5 h-1.5 mt-1 rounded-full flex-shrink-0 ${
                                   agent.status === "working"
                                     ? "animate-pulse"
                                     : ""
                                 }`}
                                 style={{ backgroundColor: status.bg }}
                               />
-
                               <div className="flex-1 min-w-0">
-                                {/* Role name */}
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[10px]">
+                                  <span className="text-[9px]">
                                     {config.emoji}
                                   </span>
                                   <span
-                                    className="text-[10px] font-semibold truncate"
+                                    className="text-[9px] font-semibold truncate"
                                     style={{ color: config.color }}
                                   >
                                     {config.label}
                                   </span>
                                 </div>
-
-                                {/* Summary */}
                                 {agent.summary && (
-                                  <p className="text-[9px] text-white/40 leading-snug mt-0.5 line-clamp-2">
+                                  <p className="text-[8px] text-white/35 leading-snug mt-0.5 line-clamp-2">
                                     {agent.summary}
                                   </p>
                                 )}
-
-                                {/* Links */}
                                 <div className="flex gap-2 mt-0.5">
                                   {agent.link && (
                                     <a
                                       href={agent.link}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-[9px] text-blue-400/70 hover:text-blue-400 hover:underline"
+                                      className="text-[8px] text-blue-400/70 hover:text-blue-400 hover:underline"
                                     >
                                       link
                                     </a>
@@ -209,7 +203,7 @@ export default function OfficePage() {
                                       href={wsUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-[9px] text-green-400/70 hover:text-green-400 hover:underline"
+                                      className="text-[8px] text-green-400/70 hover:text-green-400 hover:underline"
                                     >
                                       workspace
                                     </a>
@@ -225,8 +219,8 @@ export default function OfficePage() {
                 })()}
 
                 {sessions.length === 0 && (
-                  <div className="text-center py-6">
-                    <p className="text-[10px] text-white/30">
+                  <div className="text-center py-4">
+                    <p className="text-[9px] text-white/30">
                       No agents online
                     </p>
                   </div>
@@ -280,9 +274,9 @@ export default function OfficePage() {
 
           {/* Toggle sidebar */}
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={() => setPanelOpen(!panelOpen)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-semibold cursor-pointer transition-all ${
-              sidebarOpen
+              panelOpen
                 ? "bg-blue-500/30 text-blue-300 border border-blue-500/50"
                 : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white/70"
             }`}
