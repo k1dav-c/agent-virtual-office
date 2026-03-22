@@ -1,14 +1,15 @@
 /**
  * PNG spritesheet-based character sprites.
  *
- * Uses RPGCharacterSprites32x32.png — a CC0 spritesheet with 15 characters,
- * each having 4 directions (down, left, right, up) × 4 frames.
+ * Uses RPGCharacterSprites32x32.png — a CC0 spritesheet (384×672, 32px per frame).
  *
- * Spritesheet layout (384×672, 32px per frame):
- *   - 3 character columns (each 128px = 4 frames wide)
- *   - 5 character rows (each 128px = 4 directions tall)
- *   - Direction order per character: down, left, right, up
- *   - Frame order per direction: frame0, frame1, frame2, frame3
+ * Layout: each ROW is one character (21 characters total).
+ *   - Cols  0-3: front-facing (down) × 4 frames
+ *   - Cols  4-7: back-facing  (up)   × 4 frames
+ *   - Cols 8-11: side-facing  (right) × 4 frames
+ *   - Left-facing = side-facing flipped horizontally via CSS
+ *
+ * Frame order per direction: right-step, stand, left-step, stand
  */
 import { useEffect, useState } from "react";
 
@@ -19,47 +20,42 @@ type Direction = "up" | "down" | "left" | "right";
 const SPRITESHEET = "/assets/characters/RPGCharacterSprites32x32.png";
 const FRAME_SIZE = 32;
 const FRAMES_PER_DIR = 4; // 4 animation frames per direction
-const DIRS_PER_CHAR = 4; // down, left, right, up
-const CHARS_PER_ROW = 3; // 3 characters across the sheet
 
-/** Direction → row offset within a character block */
-const DIR_ROW: Record<Direction, number> = {
-  down: 0,
-  left: 1,
-  right: 2,
-  up: 3,
+/** Direction → column group offset (which set of 4 cols to use). */
+const DIR_COL_GROUP: Record<Direction, number> = {
+  down: 0, // cols 0-3
+  up: 1, // cols 4-7
+  right: 2, // cols 8-11
+  left: 2, // cols 8-11 (CSS-flipped)
 };
 
 /**
- * Map each agent role to a unique character index (0-14) in the spritesheet.
- * Characters are numbered left-to-right, top-to-bottom (3 per row, 5 rows).
+ * Map each agent role to a spritesheet row index (0-20).
+ * Row 0 appears to be a skeleton/placeholder, so we start roles from row 1.
  */
-const ROLE_CHAR_INDEX: Record<AgentRole, number> = {
-  "Frontend Developer": 0,
-  "Backend Developer": 1,
-  "QA Engineer": 2,
-  "Code Reviewer": 3,
-  "DevOps Engineer": 4,
-  "Technical Writer": 5,
-  Debugger: 6,
-  Architect: 7,
-  Designer: 8,
-  "Data Engineer": 9,
-  Developer: 10,
+const ROLE_CHAR_ROW: Record<AgentRole, number> = {
+  "Frontend Developer": 1,
+  "Backend Developer": 2,
+  "QA Engineer": 3,
+  "Code Reviewer": 4,
+  "DevOps Engineer": 5,
+  "Technical Writer": 6,
+  Debugger: 7,
+  Architect: 8,
+  Designer: 9,
+  "Data Engineer": 10,
+  Developer: 11,
 };
 
-/** Get the background-position for a specific character, direction, and frame. */
+/** Get the background-position for a specific character row, direction, and frame. */
 function getSpritePosition(
-  charIndex: number,
+  charRow: number,
   direction: Direction,
   frame: number,
 ): { x: number; y: number } {
-  const charCol = charIndex % CHARS_PER_ROW;
-  const charRow = Math.floor(charIndex / CHARS_PER_ROW);
-  const dirRow = DIR_ROW[direction];
-
-  const x = (charCol * FRAMES_PER_DIR + frame) * FRAME_SIZE;
-  const y = (charRow * DIRS_PER_CHAR + dirRow) * FRAME_SIZE;
+  const colGroup = DIR_COL_GROUP[direction];
+  const x = (colGroup * FRAMES_PER_DIR + frame) * FRAME_SIZE;
+  const y = charRow * FRAME_SIZE;
 
   return { x: -x, y: -y };
 }
@@ -83,8 +79,9 @@ export function WokaSprite({
   isWorking = false,
   animate = false,
 }: WokaSpriteProps) {
-  const charIndex = ROLE_CHAR_INDEX[role] ?? ROLE_CHAR_INDEX.Developer;
+  const charRow = ROLE_CHAR_ROW[role] ?? ROLE_CHAR_ROW.Developer;
   const shouldAnimate = isWorking || animate;
+  const flipH = direction === "left";
 
   // Animate walking (cycle through 4 frames)
   const [frame, setFrame] = useState(0);
@@ -104,7 +101,7 @@ export function WokaSprite({
     return () => clearInterval(interval);
   }, [shouldAnimate, isWorking]);
 
-  const pos = getSpritePosition(charIndex, direction, frame);
+  const pos = getSpritePosition(charRow, direction, frame);
 
   return (
     <div
@@ -128,6 +125,7 @@ export function WokaSprite({
           backgroundPosition: `${pos.x}px ${pos.y}px`,
           backgroundSize: `${384}px ${672}px`,
           imageRendering: "pixelated",
+          transform: flipH ? "scaleX(-1)" : undefined,
         }}
       />
     </div>
@@ -144,7 +142,7 @@ export function WalkingWokaSprite({
   role: AgentRole;
   color: string;
 }) {
-  const charIndex = ROLE_CHAR_INDEX[role] ?? ROLE_CHAR_INDEX.Developer;
+  const charRow = ROLE_CHAR_ROW[role] ?? ROLE_CHAR_ROW.Developer;
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
@@ -157,7 +155,7 @@ export function WalkingWokaSprite({
     return () => clearInterval(interval);
   }, []);
 
-  const pos = getSpritePosition(charIndex, "down", frame);
+  const pos = getSpritePosition(charRow, "down", frame);
 
   return (
     <div
