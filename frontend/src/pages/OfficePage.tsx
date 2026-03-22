@@ -1,9 +1,11 @@
 import { getCoderHost } from "@components/CoderHostSetting";
 import PixelLayout from "@components/PixelLayout";
 import VirtualOffice from "@components/office/VirtualOffice";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ROLE_CONFIGS, STATUS_COLORS } from "../config/agent-roles";
 import { useAgentSessions } from "../hooks/useAgentSessions";
+import { useCompletionSound } from "../hooks/useCompletionSound";
+import { useSessionNicknames } from "../hooks/useSessionNicknames";
 import type { AgentRole } from "../types/agent";
 
 function formatDuration(startedAt: string): string {
@@ -19,8 +21,12 @@ function formatDuration(startedAt: string): string {
 
 export default function OfficePage() {
   const { sessions, loading, error } = useAgentSessions();
+  const { soundEnabled, toggleSound } = useCompletionSound(sessions);
+  const { getNickname, setNickname } = useSessionNicknames();
   const [panelOpen, setPanelOpen] = useState(false);
   const [highlightStatus, setHighlightStatus] = useState<string | null>(null);
+  const [editingSession, setEditingSession] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
   const [, setTick] = useState(0);
 
   // Re-render every 30s to update session durations
@@ -151,11 +157,45 @@ export default function OfficePage() {
                       <div key={sessionId} className="mb-1.5">
                         {/* Session group header */}
                         {groups.size > 1 && (
-                          <div className="flex items-center gap-1.5 px-2 py-0.5 mt-1">
-                            <span className="text-[8px] text-white/25 font-mono truncate">
-                              {groupAgents[0].workspace ||
-                                sessionId.slice(0, 8)}
-                            </span>
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 mt-1 group/header">
+                            {editingSession === sessionId ? (
+                              <input
+                                autoFocus
+                                className="text-[8px] text-white/50 font-mono bg-white/10 border border-white/20 rounded px-1 py-0 outline-none w-24"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                onBlur={() => {
+                                  setNickname(sessionId, editValue);
+                                  setEditingSession(null);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    setNickname(sessionId, editValue);
+                                    setEditingSession(null);
+                                  }
+                                  if (e.key === "Escape") {
+                                    setEditingSession(null);
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <span
+                                className="text-[8px] text-white/25 font-mono truncate cursor-pointer hover:text-white/50 transition-colors"
+                                title="Click to rename"
+                                onClick={() => {
+                                  setEditingSession(sessionId);
+                                  setEditValue(
+                                    getNickname(sessionId) ||
+                                    groupAgents[0].workspace ||
+                                    sessionId.slice(0, 8),
+                                  );
+                                }}
+                              >
+                                {getNickname(sessionId) ||
+                                  groupAgents[0].workspace ||
+                                  sessionId.slice(0, 8)}
+                              </span>
+                            )}
                             <span className="text-[7px] text-white/15">
                               ({groupAgents.length})
                             </span>
@@ -181,11 +221,10 @@ export default function OfficePage() {
                               className="flex items-start gap-2 px-2 py-1 rounded hover:bg-white/5 transition-colors"
                             >
                               <div
-                                className={`w-1.5 h-1.5 mt-1 rounded-full flex-shrink-0 ${
-                                  agent.status === "working"
+                                className={`w-1.5 h-1.5 mt-1 rounded-full flex-shrink-0 ${agent.status === "working"
                                     ? "animate-pulse"
                                     : ""
-                                }`}
+                                  }`}
                                 style={{ backgroundColor: status.bg }}
                               />
                               <div className="flex-1 min-w-0">
@@ -293,14 +332,25 @@ export default function OfficePage() {
 
           <div className="w-px h-6 bg-white/10 mx-2" />
 
+          {/* Sound toggle */}
+          <button
+            onClick={toggleSound}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-semibold cursor-pointer transition-all ${soundEnabled
+                ? "bg-green-500/20 text-green-300 border border-green-500/40"
+                : "bg-white/5 text-white/30 border border-white/10 hover:bg-white/10 hover:text-white/50"
+              }`}
+            title={soundEnabled ? "Sound on — click to mute" : "Sound off — click to unmute"}
+          >
+            {soundEnabled ? "🔔" : "🔕"}
+          </button>
+
           {/* Toggle sidebar */}
           <button
             onClick={() => setPanelOpen(!panelOpen)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-semibold cursor-pointer transition-all ${
-              panelOpen
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-semibold cursor-pointer transition-all ${panelOpen
                 ? "bg-blue-500/30 text-blue-300 border border-blue-500/50"
                 : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white/70"
-            }`}
+              }`}
           >
             👥 Users
           </button>
