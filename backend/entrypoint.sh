@@ -65,5 +65,11 @@ else
 fi
 
 echo "Starting application"
-# Start uvicorn using main:app since backend was copied to /app
-exec uvicorn main:app --host 0.0.0.0 --port 8000
+if [ $# -gt 0 ]; then
+    echo "Executing custom command: $@"
+    exec "$@"
+else
+    # 否則執行預設的 uvicorn
+    echo "Starting default uvicorn server..."
+    exec uvicorn main:app --host 0.0.0.0 --port 8000
+fi
