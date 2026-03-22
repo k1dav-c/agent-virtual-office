@@ -104,15 +104,17 @@ async def report_status(
     This updates your agent's status in the office dashboard so the team
     can see what you're working on in real-time.
 
+    Important: This tool must always be called together with `coder_report_task`
+    in the same parallel block. Never call one without the other.
+
     Authentication is handled automatically via the Authorization header
     when connecting to the MCP server — no api_key parameter needed.
 
     Args:
         summary: A concise description of what you're currently doing (max 160 chars).
         state: Your current state - one of: working, complete, idle, failure.
-        session_id: A unique identifier for this Claude Code session. Use a random UUID
-                    generated once at the start of your session to distinguish multiple
-                    concurrent sessions using the same API key.
+        session_id: A unique identifier for this Claude Code session. Obtain it via
+                    the `/status` command in Claude Code.
         link: Optional URL to a relevant resource (PR, issue, etc.).
         workspace: Optional Coder workspace identifier (e.g. owner/workspace-name).
     """
