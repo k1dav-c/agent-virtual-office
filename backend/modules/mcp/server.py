@@ -42,7 +42,7 @@ UPSERT_SESSION = gql(
             }
             on_conflict: {
                 constraint: agent_sessions_api_key_id_session_id_key,
-                update_columns: [role, status, summary, link, workspace, last_heartbeat_at]
+                update_columns: [status, summary, link, workspace, last_heartbeat_at]
             }
         ) {
             id
