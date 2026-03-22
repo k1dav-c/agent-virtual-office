@@ -4,7 +4,7 @@ import VirtualOffice from "@components/office/VirtualOffice";
 import { useEffect, useState } from "react";
 import { ROLE_CONFIGS, STATUS_COLORS } from "../config/agent-roles";
 import { useAgentSessions } from "../hooks/useAgentSessions";
-import { useCompletionSound } from "../hooks/useCompletionSound";
+import { playChime, useCompletionSound } from "../hooks/useCompletionSound";
 import { useSessionNicknames } from "../hooks/useSessionNicknames";
 import type { AgentRole } from "../types/agent";
 
@@ -101,7 +101,10 @@ export default function OfficePage() {
               </div>
 
               {/* Status filter bar */}
-              <div className="px-3 py-1.5 flex gap-2 flex-wrap" style={{ borderTop: "1px solid #4c566a44" }}>
+              <div
+                className="px-3 py-1.5 flex gap-2 flex-wrap"
+                style={{ borderTop: "1px solid #4c566a44" }}
+              >
                 {Object.entries(statusCounts).map(([status, count]) => {
                   if (count === 0) return null;
                   const config =
@@ -142,7 +145,10 @@ export default function OfficePage() {
               </div>
 
               {/* Agent list — grouped by session_id */}
-              <div className="flex-1 overflow-auto px-2 py-1" style={{ borderTop: "1px solid #4c566a44" }}>
+              <div
+                className="flex-1 overflow-auto px-2 py-1"
+                style={{ borderTop: "1px solid #4c566a44" }}
+              >
                 {(() => {
                   const groups = new Map<string, typeof sessions>();
                   for (const agent of sessions) {
@@ -280,9 +286,7 @@ export default function OfficePage() {
 
                 {sessions.length === 0 && (
                   <div className="text-center py-4">
-                    <p className="text-[9px] text-white/30">
-                      No agents online
-                    </p>
+                    <p className="text-[9px] text-white/30">No agents online</p>
                   </div>
                 )}
               </div>
@@ -339,9 +343,22 @@ export default function OfficePage() {
                 ? "bg-green-500/20 text-green-300 border border-green-500/40"
                 : "bg-white/5 text-white/30 border border-white/10 hover:bg-white/10 hover:text-white/50"
               }`}
-            title={soundEnabled ? "Sound on — click to mute" : "Sound off — click to unmute"}
+            title={
+              soundEnabled
+                ? "Sound on — click to mute"
+                : "Sound off — click to unmute"
+            }
           >
             {soundEnabled ? "🔔" : "🔕"}
+          </button>
+
+          {/* Test sound (3s delay) */}
+          <button
+            onClick={() => setTimeout(playChime, 3000)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-semibold cursor-pointer transition-all bg-white/5 text-white/50 border border-white/10 hover:bg-white/10 hover:text-white/70"
+            title="Test notification sound (plays after 3s)"
+          >
+            🔊 Test
           </button>
 
           {/* Toggle sidebar */}

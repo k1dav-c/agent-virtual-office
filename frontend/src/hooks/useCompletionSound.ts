@@ -4,29 +4,30 @@ import type { AgentSession } from "../types/agent";
 
 const STORAGE_KEY = "office-sound-enabled";
 
-function playChime() {
+export function playChime() {
   try {
     const ctx = new AudioContext();
     const now = ctx.currentTime;
 
-    // Two-tone chime: C5 → E5
+    // Three-tone chime: C5 → E5 → G5, longer sustain
     for (const [freq, offset] of [
       [523.25, 0],
-      [659.25, 0.12],
+      [659.25, 0.25],
+      [783.99, 0.5],
     ] as const) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.18, now + offset);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.4);
+      gain.gain.setValueAtTime(0.2, now + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.8);
       osc.connect(gain).connect(ctx.destination);
       osc.start(now + offset);
-      osc.stop(now + offset + 0.4);
+      osc.stop(now + offset + 0.8);
     }
 
     // Clean up context after sounds finish
-    setTimeout(() => ctx.close(), 1000);
+    setTimeout(() => ctx.close(), 2000);
   } catch {
     // Audio not available — silently ignore
   }
