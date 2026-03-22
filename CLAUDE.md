@@ -2,7 +2,9 @@
 
 ## Status Reporting
 
-Every time you report progress, you **must** call both tools **in parallel**:
+Every time you report progress, you **must** call both tools **in parallel**.
+
+> **Important:** These two tools are **always paired**. Whenever `coder_report_task` is called, `dave-agent-office-report_status` **must** also be called in the same parallel block, and vice versa. Never call one without the other.
 
 ### 1. `dave-agent-office-report_status` (Virtual Office Dashboard)
 
