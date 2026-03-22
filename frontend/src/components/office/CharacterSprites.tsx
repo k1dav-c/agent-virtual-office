@@ -1,14 +1,14 @@
 /**
  * PNG spritesheet-based character sprites.
  *
- * Uses RPGCharacterSprites32x32.png — a CC0 spritesheet with 20 characters,
- * each having 4 directions (down, left, right, up) × 3 frames (stand, walk1, walk2).
+ * Uses RPGCharacterSprites32x32.png — a CC0 spritesheet with 15 characters,
+ * each having 4 directions (down, left, right, up) × 4 frames.
  *
  * Spritesheet layout (384×672, 32px per frame):
- *   - 4 character columns (each 96px = 3 frames wide)
+ *   - 3 character columns (each 128px = 4 frames wide)
  *   - 5 character rows (each 128px = 4 directions tall)
  *   - Direction order per character: down, left, right, up
- *   - Frame order per direction: stand, walk1, walk2
+ *   - Frame order per direction: frame0, frame1, frame2, frame3
  */
 import { useEffect, useState } from "react";
 
@@ -18,9 +18,9 @@ type Direction = "up" | "down" | "left" | "right";
 
 const SPRITESHEET = "/assets/characters/RPGCharacterSprites32x32.png";
 const FRAME_SIZE = 32;
-const FRAMES_PER_DIR = 3; // stand, walk1, walk2
+const FRAMES_PER_DIR = 4; // 4 animation frames per direction
 const DIRS_PER_CHAR = 4; // down, left, right, up
-const CHARS_PER_ROW = 4; // 4 characters across the sheet
+const CHARS_PER_ROW = 3; // 3 characters across the sheet
 
 /** Direction → row offset within a character block */
 const DIR_ROW: Record<Direction, number> = {
@@ -31,8 +31,8 @@ const DIR_ROW: Record<Direction, number> = {
 };
 
 /**
- * Map each agent role to a unique character index (0-19) in the spritesheet.
- * Characters are numbered left-to-right, top-to-bottom.
+ * Map each agent role to a unique character index (0-14) in the spritesheet.
+ * Characters are numbered left-to-right, top-to-bottom (3 per row, 5 rows).
  */
 const ROLE_CHAR_INDEX: Record<AgentRole, number> = {
   "Frontend Developer": 0,
@@ -86,14 +86,14 @@ export function WokaSprite({
   const charIndex = ROLE_CHAR_INDEX[role] ?? ROLE_CHAR_INDEX.Developer;
   const shouldAnimate = isWorking || animate;
 
-  // Animate walking (cycle frames 0→1→0→2)
+  // Animate walking (cycle through 4 frames)
   const [frame, setFrame] = useState(0);
   useEffect(() => {
     if (!shouldAnimate) {
       setFrame(0);
       return;
     }
-    const walkFrames = [0, 1, 0, 2];
+    const walkFrames = [0, 1, 2, 3];
     let idx = 0;
     // Wandering = slower walk, working = faster
     const speed = isWorking ? 250 : 400;
@@ -148,7 +148,7 @@ export function WalkingWokaSprite({
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
-    const walkFrames = [0, 1, 0, 2];
+    const walkFrames = [0, 1, 2, 3];
     let idx = 0;
     const interval = setInterval(() => {
       idx = (idx + 1) % walkFrames.length;
