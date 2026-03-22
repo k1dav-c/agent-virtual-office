@@ -41,8 +41,8 @@ UPSERT_SESSION = gql(
                 last_heartbeat_at: "now()"
             }
             on_conflict: {
-                constraint: agent_sessions_api_key_id_session_id_role_key,
-                update_columns: [status, summary, link, workspace, last_heartbeat_at]
+                constraint: agent_sessions_api_key_id_session_id_key,
+                update_columns: [role, status, summary, link, workspace, last_heartbeat_at]
             }
         ) {
             id
@@ -53,12 +53,11 @@ UPSERT_SESSION = gql(
 
 GET_SESSION = gql(
     """
-    query GetSession($api_key_id: uuid!, $session_id: String!, $role: String!) {
+    query GetSession($api_key_id: uuid!, $session_id: String!) {
         agent_sessions(
             where: {
                 api_key_id: { _eq: $api_key_id },
-                session_id: { _eq: $session_id },
-                role: { _eq: $role }
+                session_id: { _eq: $session_id }
             }
             limit: 1
         ) {
@@ -157,7 +156,6 @@ async def report_status(
             variable_values={
                 "api_key_id": auth_result.api_key_id,
                 "session_id": session_id,
-                "role": role,
             },
         )
         sessions = session_data.get("agent_sessions", [])

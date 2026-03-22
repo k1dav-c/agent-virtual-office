@@ -4,7 +4,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 WORKDIR /app
 
 # Install curl for health checks and dependencies for Hasura CLI
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gzip tar && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gzip tar git && rm -rf /var/lib/apt/lists/*
 
 # Install Hasura CLI
 RUN curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash

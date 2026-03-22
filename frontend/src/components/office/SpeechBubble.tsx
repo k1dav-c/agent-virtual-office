@@ -47,13 +47,14 @@ export default function SpeechBubble({
       }}
     >
       <div
-        className="relative px-2 py-1 rounded-md text-[9px] leading-tight whitespace-nowrap"
+        className="relative px-2 py-1 rounded-md text-[9px] leading-tight"
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.92)",
           color: "#2e3440",
-          maxWidth: 180,
+          width: 140,
           whiteSpace: "normal",
           wordBreak: "break-word",
+          overflow: "hidden",
           boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
           fontFamily: "'Courier New', monospace",
           fontWeight: 600,

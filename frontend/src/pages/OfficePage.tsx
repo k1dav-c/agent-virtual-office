@@ -44,7 +44,10 @@ export default function OfficePage() {
                 </div>
               </div>
             ) : (
-              <VirtualOffice agents={sessions} highlightStatus={highlightStatus} />
+              <VirtualOffice
+                agents={sessions}
+                highlightStatus={highlightStatus}
+              />
             )}
           </div>
 
@@ -66,7 +69,10 @@ export default function OfficePage() {
                   ✕
                 </button>
               </div>
-              <hr className="border-0 mx-3" style={{ borderTop: "2px solid #4c566a" }} />
+              <hr
+                className="border-0 mx-3"
+                style={{ borderTop: "2px solid #4c566a" }}
+              />
 
               {/* Status summary bar */}
               <div className="px-4 py-2 flex gap-3">
@@ -80,10 +86,16 @@ export default function OfficePage() {
                       key={status}
                       className="flex items-center gap-1 cursor-pointer rounded px-1 transition-colors"
                       style={{
-                        backgroundColor: isActive ? `${config.bg}22` : "transparent",
-                        border: isActive ? `1px solid ${config.bg}66` : "1px solid transparent",
+                        backgroundColor: isActive
+                          ? `${config.bg}22`
+                          : "transparent",
+                        border: isActive
+                          ? `1px solid ${config.bg}66`
+                          : "1px solid transparent",
                       }}
-                      onClick={() => setHighlightStatus(isActive ? null : status)}
+                      onClick={() =>
+                        setHighlightStatus(isActive ? null : status)
+                      }
                     >
                       <div
                         className="w-2 h-2 rounded-full"
@@ -103,79 +115,114 @@ export default function OfficePage() {
                 })}
               </div>
 
-              {/* Agent list */}
+              {/* Agent list — grouped by session_id */}
               <div className="flex-1 overflow-auto px-2 py-1">
-                {sessions.map((agent) => {
-                  const config =
-                    ROLE_CONFIGS[agent.role as AgentRole] ||
-                    ROLE_CONFIGS.Developer;
-                  const status =
-                    STATUS_COLORS[agent.status] || STATUS_COLORS.idle;
-                  const coderHost = getCoderHost();
-                  const wsUrl =
-                    agent.workspace && coderHost
-                      ? `${coderHost}/@me/${agent.workspace}`
-                      : null;
+                {(() => {
+                  // Group sessions by session_id
+                  const groups = new Map<string, typeof sessions>();
+                  for (const agent of sessions) {
+                    const key = agent.session_id || agent.id;
+                    const group = groups.get(key) || [];
+                    group.push(agent);
+                    groups.set(key, group);
+                  }
 
-                  return (
-                    <div
-                      key={agent.id}
-                      className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-white/5 transition-colors group"
-                    >
-                      {/* Status dot */}
-                      <div
-                        className={`w-2 h-2 mt-1 rounded-full flex-shrink-0 ${
-                          agent.status === "working" ? "animate-pulse" : ""
-                        }`}
-                        style={{ backgroundColor: status.bg }}
-                      />
-
-                      <div className="flex-1 min-w-0">
-                        {/* Role name */}
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px]">{config.emoji}</span>
-                          <span
-                            className="text-[10px] font-semibold truncate"
-                            style={{ color: config.color }}
-                          >
-                            {config.label}
-                          </span>
-                        </div>
-
-                        {/* Summary */}
-                        {agent.summary && (
-                          <p className="text-[9px] text-white/40 leading-snug mt-0.5 line-clamp-2">
-                            {agent.summary}
-                          </p>
+                  return Array.from(groups.entries()).map(
+                    ([sessionId, groupAgents]) => (
+                      <div key={sessionId} className="mb-2">
+                        {/* Session group header */}
+                        {groups.size > 1 && (
+                          <div className="flex items-center gap-1.5 px-2 py-1 mt-1">
+                            <span className="text-[9px] text-white/25 font-mono truncate">
+                              {groupAgents[0].workspace ||
+                                sessionId.slice(0, 8)}
+                            </span>
+                            <span className="text-[8px] text-white/15">
+                              ({groupAgents.length})
+                            </span>
+                            <div className="flex-1 border-t border-white/5" />
+                          </div>
                         )}
 
-                        {/* Links */}
-                        <div className="flex gap-2 mt-0.5">
-                          {agent.link && (
-                            <a
-                              href={agent.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[9px] text-blue-400/70 hover:text-blue-400 hover:underline"
+                        {groupAgents.map((agent) => {
+                          const config =
+                            ROLE_CONFIGS[agent.role as AgentRole] ||
+                            ROLE_CONFIGS.Developer;
+                          const status =
+                            STATUS_COLORS[agent.status] || STATUS_COLORS.idle;
+                          const coderHost = getCoderHost();
+                          const wsUrl =
+                            agent.workspace && coderHost
+                              ? `${coderHost}/@me/${agent.workspace}`
+                              : null;
+
+                          return (
+                            <div
+                              key={agent.id}
+                              className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-white/5 transition-colors group"
                             >
-                              link
-                            </a>
-                          )}
-                          {wsUrl && (
-                            <a
-                              href={wsUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[9px] text-green-400/70 hover:text-green-400 hover:underline"
-                            >
-                              workspace
-                            </a>
-                          )}
-                        </div>
+                              {/* Status dot */}
+                              <div
+                                className={`w-2 h-2 mt-1 rounded-full flex-shrink-0 ${
+                                  agent.status === "working"
+                                    ? "animate-pulse"
+                                    : ""
+                                }`}
+                                style={{ backgroundColor: status.bg }}
+                              />
+
+                              <div className="flex-1 min-w-0">
+                                {/* Role name */}
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px]">
+                                    {config.emoji}
+                                  </span>
+                                  <span
+                                    className="text-[10px] font-semibold truncate"
+                                    style={{ color: config.color }}
+                                  >
+                                    {config.label}
+                                  </span>
+                                </div>
+
+                                {/* Summary */}
+                                {agent.summary && (
+                                  <p className="text-[9px] text-white/40 leading-snug mt-0.5 line-clamp-2">
+                                    {agent.summary}
+                                  </p>
+                                )}
+
+                                {/* Links */}
+                                <div className="flex gap-2 mt-0.5">
+                                  {agent.link && (
+                                    <a
+                                      href={agent.link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[9px] text-blue-400/70 hover:text-blue-400 hover:underline"
+                                    >
+                                      link
+                                    </a>
+                                  )}
+                                  {wsUrl && (
+                                    <a
+                                      href={wsUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[9px] text-green-400/70 hover:text-green-400 hover:underline"
+                                    >
+                                      workspace
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    </div>
+                    ),
                   );
-                })}
+                })()}
 
                 {sessions.length === 0 && (
                   <div className="text-center py-6">
