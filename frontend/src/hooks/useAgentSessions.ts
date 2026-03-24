@@ -34,12 +34,8 @@ export function useAgentSessions() {
   const filterActive = useCallback((allSessions: AgentSession[]) => {
     const now = Date.now();
     return allSessions.filter((s) => {
-      const started = new Date(s.started_at).getTime();
       const heartbeat = new Date(s.last_heartbeat_at).getTime();
-      return (
-        now - started < STALE_THRESHOLD_MS &&
-        now - heartbeat < STALE_THRESHOLD_MS
-      );
+      return now - heartbeat < STALE_THRESHOLD_MS;
     });
   }, []);
 
