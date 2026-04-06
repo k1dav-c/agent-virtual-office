@@ -1,163 +1,149 @@
 # Agent Virtual Office
 
-一個像素風格的虛擬辦公室，讓你即時觀看 AI Agent 在辦公室裡工作。Agent 透過 MCP 回報狀態，前端以 Gather Town 風格呈現每位 Agent 的工作動態。
+> A pixel-art virtual office where you can watch your AI agents work in real-time.
 
-## 運作流程
+Connect your Claude Code sessions via MCP and see animated pixel characters appear at their desks — each one reporting live status, role, and current task as agents work through your projects.
 
-```
-使用者登入 (Auth0)
-    ↓
-產生 API Key → 設定 Coder Host
-    ↓
-將 MCP 設定貼入 Claude Code
-    ↓
-Agent 透過 MCP 回報 status / workspace
-    ↓
-前端即時顯示像素角色在辦公室工作
-```
+## Features
 
-## 畫面
+- **Live pixel-art office** — a top-down office scene rendered with SVG sprites and CSS animations
+- **Real-time agent status** — updates instantly via GraphQL WebSocket subscriptions, no polling
+- **Automatic role inference** — analyses each summary with weighted keyword scoring to assign roles (Frontend Developer, DevOps Engineer, Debugger, Architect, etc.)
+- **11 agent roles** — each with its own colour, emoji badge, and desk accessory
+- **Four status states** — `working` (green), `idle` (blue), `complete` (grey), `failure` (red)
+- **Stale-session filtering** — sessions without heartbeat for 12 hours are auto-hidden
+- **Session grouping & nicknames** — rename any session directly in the sidebar
+- **Workspace deep-links** — clickable links to open Coder workspaces
+- **Completion sound** — optional chime when any agent transitions to `complete`
+- **API key management** — keys generated with Web Crypto API, only SHA-256 hash stored
+- **Auth0 authentication** — every page protected; user records synced on first login
+- **Append-only activity log** — every status call recorded in `session_logs`
 
-| 頁面         | 說明                                                           |
-| ------------ | -------------------------------------------------------------- |
-| `/login`     | 像素風登入畫面，綠色方格地板 + 等距辦公室場景                  |
-| `/`          | 首頁，走動的像素角色 + 辦公室裝飾 + 功能說明                   |
-| `/dashboard` | 設定頁：Coder Host、API Key 管理、MCP 設定片段                 |
-| `/office`    | 全螢幕虛擬辦公室，即時顯示 Agent 狀態，側邊欄含 workspace 連結 |
+## Tech Stack
 
-## 技術架構
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, TypeScript 5, Vite 7, Tailwind CSS 4 |
+| Auth (client) | Auth0 React SDK 2 |
+| GraphQL (client) | graphql-request 7, graphql-ws 6 |
+| Backend API | FastAPI 0.118, Python 3.11 |
+| MCP Server | `mcp` Python SDK (Streamable HTTP transport) |
+| GraphQL Engine | Hasura GraphQL Engine v2.36 |
+| Database | PostgreSQL 17 |
+| Message Queue | RabbitMQ 4 (aio-pika 9) |
+| Containerisation | Docker, Docker Compose |
 
-```
-Frontend (React 19 + TypeScript + Vite + Tailwind CSS)
-  ├── Auth0 登入
-  ├── Hasura GraphQL Subscriptions (即時 Agent 狀態)
-  └── 像素風 SVG 角色 + CSS 動畫
-        │
-        │ WebSocket / HTTP
-        ▼
-Hasura GraphQL Engine ─── PostgreSQL
-        ▲
-        │ GraphQL Mutation
-        │
-Backend (FastAPI)
-  ├── /mcp/* ── MCP Server (Streamable HTTP)
-  │              └── report_status tool (summary, state, link, workspace)
-  └── /api/auth/* ── Auth0 JWT 驗證
+## Quick Start
 
-※ API Key 的產生、列表、撤銷、刪除皆由前端直接透過
-   Hasura GraphQL 完成 (Web Crypto API 產生 + SHA-256 雜湊)
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/k1dav-c/agent-virtual-office.git
+cd agent-virtual-office
+cp .env.docker .env
+# Edit .env with your Auth0 domain/client ID and passwords
 ```
 
-## 快速開始
+### 2. Start all services
 
-### 環境需求
-
-- Docker + Dev Containers (建議用 VS Code 或 Coder)
-- Auth0 帳號 (身分驗證)
-
-### 環境變數
-
-**前端 (`frontend/.env`)**
-
-```env
-VITE_AUTH0_DOMAIN=your-auth0-domain.auth0.com
-VITE_AUTH0_CLIENT_ID=your-auth0-client-id
-VITE_AUTH0_AUDIENCE=your-api-audience
-VITE_HASURA_GRAPHQL_URL=http://localhost:8080/v1/graphql
-VITE_HASURA_WS_URL=ws://localhost:8080/v1/graphql
+```bash
+docker compose up --build
 ```
 
-**後端 (`backend/.env`)**
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| Backend API + MCP | http://localhost:8000 |
+| Hasura Console | http://localhost:8080 |
+| RabbitMQ Management | http://localhost:15672 |
 
-```env
-HASURA_GRAPHQL_URL=http://hasura:8080/v1/graphql
-HASURA_ADMIN_SECRET=your-hasura-admin-secret
-RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-AUTH0_DOMAIN=your-auth0-domain.auth0.com
-AUTH0_AUDIENCE=your-api-audience
+### 3. Apply Hasura migrations
+
+```bash
+hasura migrate apply --database-name default
+hasura metadata apply
 ```
 
-### 啟動
+### 4. Generate an API key
 
-用 VS Code / Coder 開啟專案，選擇 **Reopen in Container**，所有服務會自動啟動。
+1. Open http://localhost:3000 and sign in with Auth0
+2. Go to **Dashboard → API Keys** and create a key (shown only once)
 
-- 前端：http://localhost:5173
-- 後端 API：http://localhost:8000
-- Hasura Console：http://localhost:8080
-
-## 專案結構
+## Architecture
 
 ```
-backend/
-  ├── main.py                 # FastAPI + MCP Server 掛載
-  ├── modules/
-  │   ├── auth/               # Auth0 JWT 驗證
-  │   ├── api_keys/           # API Key 驗證 (MCP 連線時比對 hash)
-  │   └── mcp/                # MCP Server (report_status tool)
-  └── core/                   # 設定、日誌、GraphQL client
+┌───────────────────────────────────────────────────────┐
+│  Browser (React 19 + Auth0)                           │
+│  /office  /dashboard  /admin                          │
+│     │           │                                     │
+│     │  GraphQL WebSocket subscription                 │
+└─────┴───────────┬─────────────────────────────────────┘
+                  ▼
+┌─────────────────────────────────────────────────────┐
+│  Hasura GraphQL Engine (port 8080)                  │
+│  JWT validation · Row-level permissions              │
+│  Real-time subscriptions                             │
+└──────────────────┬──────────────────────────────────┘
+                   ▼
+┌──────────────────────────────────────────────────────┐
+│  PostgreSQL 17                                       │
+│  users · api_keys · agent_sessions · session_logs    │
+└──────────────────────────────────────────────────────┘
 
-frontend/
-  ├── src/
-  │   ├── pages/
-  │   │   ├── LoginPage.tsx   # 像素風登入
-  │   │   ├── HomePage.tsx    # 首頁 (走動角色 + 辦公室場景)
-  │   │   ├── DashboardPage.tsx # 設定頁 (Coder Host / API Key / MCP)
-  │   │   └── OfficePage.tsx  # 虛擬辦公室 (即時 Agent 狀態)
-  │   ├── components/
-  │   │   ├── office/         # 虛擬辦公室場景元件
-  │   │   ├── PixelLayout.tsx # 共用像素風版面 (綠色地板)
-  │   │   ├── ApiKeyManager.tsx
-  │   │   ├── CoderHostSetting.tsx
-  │   │   └── McpConfigSnippet.tsx
-  │   ├── hooks/
-  │   │   └── useAgentSessions.ts  # GraphQL subscription
-  │   ├── config/
-  │   │   ├── agent-roles.ts  # Agent 角色定義 + 顏色
-  │   │   └── office-scenes.ts
-  │   └── types/
-  │       └── agent.ts        # AgentSession 型別
+┌──────────────────────────────────────────────────────┐
+│  FastAPI Backend (port 8000)                         │
+│  /health · /api/auth · /mcp/*                        │
+│                                                      │
+│  MCP Streamable HTTP ─► report_status()              │
+│    → role_inference → upsert session → audit log     │
+└──────────────────────────────────────────────────────┘
 
-hasura/
-  ├── migrations/             # DB schema (agent_sessions, api_keys, session_logs)
-  └── metadata/               # 權限、關聯設定
+┌──────────────────────────────────────────────────────┐
+│  Claude Code / MCP Client                            │
+│  POST /mcp/mcp  (Bearer API key)                     │
+│  Tool: report_status(summary, state, session_id)     │
+└──────────────────────────────────────────────────────┘
 ```
 
-## Agent 整合
+## MCP Integration
 
-### 1. 在 Dashboard 頁面管理 API Key
+### Add to Claude Code
 
-API Key 的產生、列表、撤銷、刪除全部在前端完成，不經過後端：
+In `.claude/settings.json`:
 
-- **產生**：Web Crypto API 產生隨機 key，SHA-256 雜湊後存入 Hasura
-- **列表 / 撤銷 / 刪除**：前端直接呼叫 Hasura GraphQL mutation
-- 原始 key 只在產生時顯示一次，後端僅儲存 hash
+```json
+{
+  "mcpServers": {
+    "virtual-office": {
+      "type": "streamable-http",
+      "url": "https://YOUR_HOST/mcp/mcp?api_key=avo_<YOUR_API_KEY>"
+    }
+  }
+}
+```
 
-### 2. 設定 Coder Host URL（如使用 Coder workspace）
+### Tell the agent to report status
 
-### 3. 將 MCP 設定加入 Claude Code
+Add to your `CLAUDE.md`:
 
-Dashboard 頁面會產生完整的 MCP config snippet，直接貼入 `~/.claude.json` 即可。
+```
+Use the virtual-office MCP tool `report_status` to report your working status.
+- Report a summary of what you're doing, your state (working/complete/idle/failure),
+  and optionally a link and workspace name.
+- Always include a `session_id` — generate a random UUID once and reuse it.
+- Report status after receiving each new user message.
+- Report "complete" when you finish a task.
+```
 
-Agent 呼叫 `report_status` tool 時，傳入：
+### How it works
 
-| 參數        | 說明                                                 |
-| ----------- | ---------------------------------------------------- |
-| `summary`   | 目前工作摘要 (≤160 字)                               |
-| `state`     | `working` / `complete` / `idle` / `failure`          |
-| `link`      | 相關連結 (PR、Issue 等)                              |
-| `workspace` | Coder workspace 識別碼 (e.g. `owner/workspace-name`) |
-| `api_key`   | 你的 API Key                                         |
+1. Claude Code calls `report_status` via MCP Streamable HTTP
+2. Backend authenticates via SHA-256 API key hash lookup
+3. Role is inferred from summary text (weighted keyword scoring)
+4. Session is upserted in PostgreSQL via Hasura GraphQL
+5. Hasura pushes real-time update to all connected browsers
+6. Pixel character animates to reflect the new state
 
-### 4. 前往 Office 頁面觀看 Agent 工作
+## License
 
-## 資料庫
-
-| Table            | 說明                                                |
-| ---------------- | --------------------------------------------------- |
-| `agent_sessions` | Agent 狀態 (role, status, summary, link, workspace) |
-| `api_keys`       | 使用者 API Key                                      |
-| `session_logs`   | Agent 活動紀錄                                      |
-
-## 授權
-
-[MIT](LICENSE)
+MIT License — see [LICENSE](LICENSE) for details.
