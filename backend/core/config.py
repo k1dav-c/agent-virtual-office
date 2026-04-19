@@ -28,7 +28,7 @@ class Settings(BaseModel):
 
     # RabbitMQ Configuration
     rabbitmq_host: str = os.environ.get("RABBITMQ_HOST", "")
-    rabbitmq_port: int = int(os.environ.get("RABBITMQ_PORT", 0)
+    rabbitmq_port: int = int(os.environ.get("RABBITMQ_PORT", 0))
     rabbitmq_user: str = os.environ.get("SERVICE_USER_RABBITMQ", "")
     rabbitmq_password: str = os.environ.get("SERVICE_PASSWORD_RABBITMQ", "")
     rabbitmq_vhost: str = os.environ.get("RABBITMQ_VHOST", "")
