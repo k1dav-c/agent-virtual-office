@@ -27,11 +27,11 @@ class Settings(BaseModel):
     hasura_admin_secret: str = os.environ["SERVICE_PASSWORD_HASURA_ADMIN"]
 
     # RabbitMQ Configuration
-    rabbitmq_host: str = os.environ["RABBITMQ_HOST"]
-    rabbitmq_port: int = int(os.environ["RABBITMQ_PORT"])
-    rabbitmq_user: str = os.environ["SERVICE_USER_RABBITMQ"]
-    rabbitmq_password: str = os.environ["SERVICE_PASSWORD_RABBITMQ"]
-    rabbitmq_vhost: str = os.environ["RABBITMQ_VHOST"]
+    rabbitmq_host: str = os.environ.get("RABBITMQ_HOST", "")
+    rabbitmq_port: int = int(os.environ.get("RABBITMQ_PORT", 0)
+    rabbitmq_user: str = os.environ.get("SERVICE_USER_RABBITMQ", "")
+    rabbitmq_password: str = os.environ.get("SERVICE_PASSWORD_RABBITMQ", "")
+    rabbitmq_vhost: str = os.environ.get("RABBITMQ_VHOST", "")
 
 
 # This single instance will be used across the application
