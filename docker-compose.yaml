@@ -48,8 +48,6 @@ services:
     depends_on:
       hasura:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
     environment:
       # Auth0 Configuration
       VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN}
@@ -57,12 +55,6 @@ services:
       # Hasura Configuration
       HASURA_ENDPOINT: ${HASURA_ENDPOINT}
       SERVICE_PASSWORD_HASURA_ADMIN: ${SERVICE_PASSWORD_HASURA_ADMIN}
-      # RabbitMQ Configuration
-      RABBITMQ_HOST: ${RABBITMQ_HOST}
-      RABBITMQ_PORT: ${RABBITMQ_PORT}
-      SERVICE_USER_RABBITMQ: ${SERVICE_USER_RABBITMQ}
-      SERVICE_PASSWORD_RABBITMQ: ${SERVICE_PASSWORD_RABBITMQ}
-      RABBITMQ_VHOST: ${RABBITMQ_VHOST}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -91,4 +83,3 @@ services:
 
 volumes:
   postgres_data:
-  rabbitmq_data:
